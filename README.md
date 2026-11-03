@@ -19,4 +19,4 @@ Sau đó mở <http://localhost:8000>.
 3. Bấm vào từ hoặc biểu tượng loa để nghe audio giọng người hai lần.
 4. Chọn giọng Anh-Anh/Anh-Mỹ; bấm **C** cạnh từ để tra trực tiếp trên Cambridge Dictionary.
 
-Audio được tải từ Free Dictionary API; dữ liệu này không bảo đảm có đủ mọi từ. Khi từ chưa có audio, ứng dụng báo lỗi và có sẵn liên kết Cambridge để tra cứu cách đọc.
+Audio ưu tiên bản ghi giọng người do Free Dictionary API cung cấp. Nếu API chưa có audio cho một từ, ứng dụng dùng giọng đọc tiếng Anh UK/US có sẵn trong trình duyệt; nút Cambridge cạnh từ đó mở mục từ để đối chiếu phát âm. Danh sách từ được lưu cục bộ trên thiết bị, không tải lên máy chủ.

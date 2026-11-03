@@ -175,7 +175,7 @@
             <option value="us">Anh-Mỹ (US)</option>
           </select>
         </div>
-        <p class="footer-note">Âm thanh là bản ghi giọng người từ từ điển mở. Nếu một từ chưa có audio, hãy mở Cambridge bằng nút “C” cạnh từ đó để nghe và kiểm tra.</p>
+        <p class="footer-note">Ưu tiên bản ghi giọng người trong từ điển. Nếu chưa có audio, ứng dụng dùng giọng đọc tiếng Anh UK/US của trình duyệt; nút “C” mở Cambridge để bạn đối chiếu.</p>
       </aside>
     </div>
   </main>
@@ -327,18 +327,44 @@
         const phonetics = data.flatMap(entry => entry.phonetics || []);
         const desired = selectedAccent === "uk" ? /uk|gb|british/i : /us|american/i;
         const withAudio = phonetics.filter(item => item.audio && item.audio.trim());
-        const phonetic = phonetics.find(item => item.text)?.text || "";
         const match = withAudio.find(item => desired.test(item.audio) || desired.test(item.sourceUrl || "")) || withAudio[0];
         if (!match) throw new Error("Từ điển chưa có audio cho từ này.");
+        const phonetic = match.text || phonetics.find(item => item.text)?.text || "";
         return { url: match.audio, phonetic };
       }
 
       const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+      function speakWithEnglishVoice(text, selectedAccent) {
+        if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+          return Promise.reject(new Error("Trình duyệt không hỗ trợ giọng đọc dự phòng."));
+        }
+        const synth = window.speechSynthesis;
+        synth.cancel();
+        const voices = synth.getVoices();
+        const preferredLang = selectedAccent === "uk" ? /^en-GB$/i : /^en-US$/i;
+        const voice = voices.find(item => preferredLang.test(item.lang)) || voices.find(item => /^en(-|$)/i.test(item.lang));
+        return (async () => {
+          for (let count = 0; count < 2; count += 1) {
+            await new Promise((resolve, reject) => {
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.lang = selectedAccent === "uk" ? "en-GB" : "en-US";
+              utterance.rate = 0.88;
+              if (voice) utterance.voice = voice;
+              utterance.onend = resolve;
+              utterance.onerror = () => reject(new Error("Không phát được giọng đọc trên thiết bị này."));
+              synth.speak(utterance);
+            });
+            if (count === 0) await delay(550);
+          }
+        })();
+      }
+
       async function playTwice(item, button) {
         if (activeAudio) {
           activeAudio.pause();
           activeAudio = null;
         }
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
         button.disabled = true;
         const phoneticElement = listElement.querySelector(`[data-phonetic="${CSS.escape(item.id)}"]`);
         if (phoneticElement) phoneticElement.textContent = "Đang tải audio…";
@@ -349,16 +375,23 @@
           activeAudio = audio;
           for (let count = 0; count < 2; count += 1) {
             audio.currentTime = 0;
-            await audio.play();
-            await new Promise((resolve, reject) => {
+            const ended = new Promise((resolve, reject) => {
               audio.onended = resolve;
               audio.onerror = () => reject(new Error("Không phát được audio trên thiết bị này."));
             });
+            await audio.play();
+            await ended;
             if (count === 0) await delay(550);
           }
         } catch (error) {
-          if (phoneticElement) phoneticElement.textContent = "Không tải được audio · mở Cambridge ↗";
-          showToast(error.message || "Không phát được audio. Hãy thử lại hoặc mở Cambridge.");
+          try {
+            await speakWithEnglishVoice(item.word, accent.value);
+            if (phoneticElement) phoneticElement.textContent = `Giọng máy ${accent.value.toUpperCase()} · nghe 2 lần`;
+            showToast("Từ điển chưa có bản ghi âm giọng người; đang dùng giọng tiếng Anh của trình duyệt. Bấm C để đối chiếu Cambridge.");
+          } catch (fallbackError) {
+            if (phoneticElement) phoneticElement.textContent = "Chưa có audio · mở Cambridge ↗";
+            showToast(`${error.message || "Không có bản ghi âm."} ${fallbackError.message || "Hãy mở Cambridge để nghe."}`);
+          }
         } finally {
           if (activeAudio) activeAudio = null;
           button.disabled = false;
