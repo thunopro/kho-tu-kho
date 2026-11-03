@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f3">
+  <title>Kho từ khó — Word Cabinet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1e2c27;
+      --muted: #74817b;
+      --green: #27715b;
+      --green-dark: #1d5c49;
+      --mint: #e6f1e9;
+      --paper: #fffefa;
+      --line: #e7e9e1;
+      --bg: #f6f7f3;
+      --orange: #e59b54;
+      --shadow: 0 16px 50px rgb(42 59 49 / 7%);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "DM Sans", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .topbar {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 max(28px, calc((100vw - 1160px) / 2));
+      background: rgb(255 254 250 / 88%);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-family: Manrope, sans-serif; font-weight: 800; letter-spacing: -.04em; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: white; background: var(--green); font-size: 18px; }
+    .top-note { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #71aa80; }
+    main { max-width: 1160px; margin: 0 auto; padding: 54px 28px 72px; }
+    .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
+    .eyebrow { color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font: 800 clamp(32px, 5vw, 48px)/1.12 Manrope, sans-serif; letter-spacing: -.055em; }
+    .subtitle { margin: 0; max-width: 570px; color: var(--muted); font-size: 15px; line-height: 1.65; }
+    .count-chip { flex: 0 0 auto; padding: 11px 15px; border: 1px solid var(--line); border-radius: 99px; background: var(--paper); color: var(--muted); font-size: 13px; }
+    .count-chip strong { margin-right: 5px; color: var(--ink); font-size: 15px; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .75fr); align-items: start; gap: 22px; }
+    .panel { border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: var(--shadow); }
+    .list-panel { min-height: 440px; overflow: hidden; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 23px 25px 18px; }
+    .panel-title { margin: 0; font: 700 17px Manrope, sans-serif; letter-spacing: -.025em; }
+    .panel-caption { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .search-wrap { position: relative; width: min(230px, 42%); }
+    .search-wrap svg { position: absolute; top: 11px; left: 12px; color: #89948d; pointer-events: none; }
+    .search { width: 100%; height: 38px; padding: 0 12px 0 36px; border: 1px solid var(--line); border-radius: 10px; outline: none; background: #fff; font-size: 13px; }
+    .search:focus, .word-input:focus { border-color: #88ae9c; box-shadow: 0 0 0 3px rgb(39 113 91 / 9%); }
+    .word-list { padding: 0 14px 14px; }
+    .word-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 13px; min-height: 77px; padding: 10px 11px; border-top: 1px solid #eff0eb; }
+    .sound-button { width: 39px; height: 39px; display: grid; place-items: center; border: 0; border-radius: 13px; color: var(--green); background: var(--mint); transition: transform .15s, background .15s; }
+    .sound-button:hover { transform: scale(1.05); background: #d9eadf; }
+    .sound-button:disabled { cursor: wait; opacity: .55; }
+    .word-main { min-width: 0; }
+    .word-name { display: inline-block; max-width: 100%; padding: 0; border: 0; overflow: hidden; color: var(--ink); background: transparent; font: 700 16px Manrope, sans-serif; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+    .word-name:hover { color: var(--green); }
+    .word-meta { display: flex; align-items: center; gap: 9px; margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .phonetic { color: #7e8983; font-family: Georgia, serif; }
+    .row-actions { display: flex; align-items: center; gap: 8px; }
+    .dictionary-link, .remove-button { display: grid; place-items: center; width: 33px; height: 33px; border: 1px solid transparent; border-radius: 9px; color: #85918a; background: transparent; text-decoration: none; }
+    .dictionary-link:hover, .remove-button:hover { border-color: var(--line); color: var(--green); background: white; }
+    .remove-button:hover { color: #b65a4f; }
+    .empty { padding: 57px 20px 66px; text-align: center; }
+    .empty-illustration { display: grid; place-items: center; width: 62px; height: 62px; margin: 0 auto 17px; border-radius: 21px; color: var(--green); background: var(--mint); }
+    .empty h3 { margin: 0 0 7px; font: 700 16px Manrope, sans-serif; }
+    .empty p { max-width: 310px; margin: 0 auto; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .add-panel { padding: 24px; }
+    .add-panel h2 { margin: 0; font: 700 17px Manrope, sans-serif; letter-spacing: -.025em; }
+    .add-description { margin: 6px 0 20px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .label { display: block; margin-bottom: 8px; color: #4e5b54; font-size: 12px; font-weight: 700; }
+    .word-input { width: 100%; height: 47px; padding: 0 13px; border: 1px solid #dfe3db; border-radius: 10px; outline: none; background: white; font-size: 14px; }
+    .word-input::placeholder { color: #aab2ac; }
+    .primary-button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 45px; margin-top: 12px; border: 0; border-radius: 10px; color: white; background: var(--green); font-weight: 700; font-size: 13px; transition: background .15s, transform .15s; }
+    .primary-button:hover { transform: translateY(-1px); background: var(--green-dark); }
+    .tip { display: flex; gap: 10px; margin-top: 19px; padding: 13px; border-radius: 11px; color: #56685d; background: #f1f5ee; font-size: 12px; line-height: 1.55; }
+    .tip svg { flex: 0 0 auto; margin-top: 1px; color: var(--green); }
+    .sound-settings { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 19px; padding-top: 17px; border-top: 1px solid var(--line); }
+    .sound-settings label { color: var(--muted); font-size: 12px; }
+    .accent-select { max-width: 145px; height: 34px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: white; font-size: 12px; }
+    .footer-note { margin: 20px 0 0; color: #89938d; font-size: 11px; line-height: 1.6; }
+    .toast { position: fixed; z-index: 5; right: 24px; bottom: 24px; max-width: min(360px, calc(100vw - 48px)); padding: 13px 17px; transform: translateY(14px); border: 1px solid #dce7de; border-radius: 12px; opacity: 0; color: var(--ink); background: white; box-shadow: var(--shadow); font-size: 13px; pointer-events: none; transition: .2s ease; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .modal-backdrop { position: fixed; z-index: 10; inset: 0; display: grid; place-items: center; padding: 20px; background: rgb(26 38 31 / 42%); }
+    .modal { width: min(410px, 100%); padding: 25px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: 0 25px 80px rgb(15 31 21 / 20%); }
+    .modal-tag { color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+    .modal h2 { margin: 8px 0 7px; overflow-wrap: anywhere; font: 800 28px Manrope, sans-serif; letter-spacing: -.045em; }
+    .modal p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+    .modal-actions button { height: 42px; padding: 0 15px; border-radius: 9px; font-size: 13px; font-weight: 700; }
+    .cancel-button { flex: 1; border: 1px solid var(--line); color: var(--muted); background: white; }
+    .confirm-button { flex: 1.4; border: 0; color: white; background: var(--green); }
+    .hidden { display: none !important; }
+    @media (max-width: 760px) {
+      main { padding: 38px 18px 50px; }
+      .topbar { height: 62px; padding: 0 18px; }
+      .workspace { grid-template-columns: 1fr; }
+      .hero { align-items: flex-start; }
+      .count-chip { margin-top: 7px; }
+      .list-panel { min-height: 300px; }
+      .add-panel { grid-row: 1; }
+    }
+    @media (max-width: 480px) {
+      .top-note { font-size: 0; }
+      .hero { display: block; }
+      .count-chip { display: inline-block; margin-top: 17px; }
+      .panel-head { padding: 20px 18px 15px; }
+      .word-list { padding: 0 10px 10px; }
+      .search-wrap { width: 42%; }
+      .add-panel { padding: 21px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">W</span><span>Word Cabinet</span></div>
+    <div class="top-note"><span class="status-dot"></span> Kho từ được lưu trên thiết bị này</div>
+  </header>
+  <main>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Góc học từ vựng</div>
+        <h1>Kho từ khó của bạn</h1>
+        <p class="subtitle">Gom những từ cần luyện vào một chỗ. Bấm vào từ để nghe giọng đọc tiếng Anh hai lần và luyện theo.</p>
+      </div>
+      <div class="count-chip"><strong id="word-count">0</strong> từ trong kho</div>
+    </section>
+
+    <div class="workspace">
+      <section class="panel list-panel" aria-labelledby="list-title">
+        <div class="panel-head">
+          <div><h2 class="panel-title" id="list-title">Từ cần luyện</h2><p class="panel-caption">Chọn một từ để nghe phát âm 2 lần</p></div>
+          <div class="search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+            <input id="search" class="search" type="search" placeholder="Tìm từ..." aria-label="Tìm từ trong kho">
+          </div>
+        </div>
+        <div id="word-list" class="word-list"></div>
+      </section>
+
+      <aside class="panel add-panel">
+        <h2>Thêm từ mới</h2>
+        <p class="add-description">Nhập từ hoặc cụm từ tiếng Anh bạn muốn ghi nhớ.</p>
+        <form id="add-form">
+          <label class="label" for="word-input">Từ tiếng Anh</label>
+          <input id="word-input" class="word-input" type="text" maxlength="80" placeholder="Ví dụ: comfortable" autocomplete="off" required>
+          <button class="primary-button" type="submit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"></path></svg>
+            Thêm vào kho
+          </button>
+        </form>
+        <div class="tip">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4m0-4h.01"></path></svg>
+          <span>Từ chỉ được lưu sau khi bạn xác nhận. Có thể mở mục từ Cambridge để đối chiếu trọng âm và cách đọc.</span>
+        </div>
+        <div class="sound-settings">
+          <label for="accent">Giọng phát âm</label>
+          <select class="accent-select" id="accent">
+            <option value="uk">Anh-Anh (UK)</option>
+            <option value="us">Anh-Mỹ (US)</option>
+          </select>
+        </div>
+        <p class="footer-note">Âm thanh là bản ghi giọng người từ từ điển mở. Nếu một từ chưa có audio, hãy mở Cambridge bằng nút “C” cạnh từ đó để nghe và kiểm tra.</p>
+      </aside>
+    </div>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="modal-backdrop" class="modal-backdrop hidden" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-word">
+      <div class="modal-tag">Xác nhận thêm vào kho</div>
+      <h2 id="modal-word"></h2>
+      <p>Từ này sẽ được lưu trong kho từ vựng trên thiết bị của bạn. Bạn có thể nghe phát âm bất cứ lúc nào.</p>
+      <div class="modal-actions">
+        <button class="cancel-button" id="cancel-add" type="button">Để sau</button>
+        <button class="confirm-button" id="confirm-add" type="button">Xác nhận lưu</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = "word-cabinet.words.v1";
+      const listElement = document.getElementById("word-list");
+      const form = document.getElementById("add-form");
+      const input = document.getElementById("word-input");
+      const search = document.getElementById("search");
+      const accent = document.getElementById("accent");
+      const modal = document.getElementById("modal-backdrop");
+      const modalWord = document.getElementById("modal-word");
+      const toastElement = document.getElementById("toast");
+      let words = loadWords();
+      let pendingWord = "";
+      let activeAudio = null;
+      let toastTimer;
+
+      function loadWords() {
+        try {
+          const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          return Array.isArray(value) ? value.filter(item => item && typeof item.word === "string") : [];
+        } catch { return []; }
+      }
+
+      function saveWords() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+          return true;
+        } catch {
+          showToast("Không thể lưu trên thiết bị này. Hãy kiểm tra dung lượng trình duyệt.");
+          return false;
+        }
+      }
+
+      function showToast(message) {
+        toastElement.textContent = message;
+        toastElement.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastElement.classList.remove("show"), 3000);
+      }
+
+      function icon(name) {
+        const icons = {
+          play: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5Z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7m3-10a9 9 0 0 1 0 13"></path></svg>',
+          link: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3A5 5 0 0 0 13 2.93l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.07 0l-3 3A5 5 0 0 0 11 21.07l1.71-1.71"></path></svg>',
+          trash: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"></path></svg>'
+        };
+        return icons[name];
+      }
+
+      function render() {
+        const query = search.value.trim().toLocaleLowerCase();
+        const shownWords = words.filter(item => item.word.toLocaleLowerCase().includes(query));
+        document.getElementById("word-count").textContent = words.length;
+        if (!shownWords.length) {
+          const isSearch = query.length > 0;
+          listElement.innerHTML = `<div class="empty"><div class="empty-illustration"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z"></path><path d="M4 5.5V21m4-13h8m-8 4h6"></path></svg></div><h3>${isSearch ? "Không tìm thấy từ này" : "Kho từ đang trống"}</h3><p>${isSearch ? "Thử từ khóa khác nhé." : "Thêm từ bạn muốn luyện ở khung bên cạnh. Mỗi từ sẽ được lưu sau khi bạn xác nhận."}</p></div>`;
+          return;
+        }
+        listElement.innerHTML = shownWords.map(item => {
+          const encoded = encodeURIComponent(item.word.trim().toLowerCase()).replace(/%20/g, "-");
+          return `<article class="word-row" data-id="${escapeHtml(item.id)}">
+            <button class="sound-button" type="button" data-action="play" aria-label="Nghe ${escapeHtml(item.word)} hai lần" title="Nghe 2 lần">${icon("play")}</button>
+            <div class="word-main"><button type="button" class="word-name" data-action="play">${escapeHtml(item.word)}</button><div class="word-meta"><span class="phonetic" data-phonetic="${escapeHtml(item.id)}">Bấm để nghe 2 lần</span></div></div>
+            <div class="row-actions"><a class="dictionary-link" href="https://dictionary.cambridge.org/dictionary/english/${encoded}" target="_blank" rel="noopener noreferrer" aria-label="Tra ${escapeHtml(item.word)} trên Cambridge" title="Mở Cambridge">C</a><button class="remove-button" type="button" data-action="remove" aria-label="Xóa ${escapeHtml(item.word)}" title="Xóa">${icon("trash")}</button></div>
+          </article>`;
+        }).join("");
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+      }
+
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+        const word = input.value.trim().replace(/\s+/g, " ");
+        if (!word) return;
+        if (words.some(item => item.word.toLocaleLowerCase() === word.toLocaleLowerCase())) {
+          showToast("Từ này đã có trong kho rồi.");
+          return;
+        }
+        pendingWord = word;
+        modalWord.textContent = word;
+        modal.classList.remove("hidden");
+        document.getElementById("confirm-add").focus();
+      });
+
+      function closeModal() {
+        modal.classList.add("hidden");
+        pendingWord = "";
+        input.focus();
+      }
+
+      document.getElementById("cancel-add").addEventListener("click", closeModal);
+      modal.addEventListener("click", event => { if (event.target === modal) closeModal(); });
+      document.addEventListener("keydown", event => { if (event.key === "Escape" && !modal.classList.contains("hidden")) closeModal(); });
+      document.getElementById("confirm-add").addEventListener("click", () => {
+        if (!pendingWord) return;
+        const word = pendingWord;
+        words.unshift({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, word, addedAt: Date.now() });
+        if (saveWords()) {
+          search.value = "";
+          render();
+          input.value = "";
+          closeModal();
+          showToast(`Đã thêm “${word}” vào kho từ.`);
+        } else {
+          words.shift();
+          closeModal();
+        }
+      });
+      search.addEventListener("input", render);
+
+      listElement.addEventListener("click", async event => {
+        const actionButton = event.target.closest("[data-action]");
+        if (!actionButton) return;
+        const row = actionButton.closest(".word-row");
+        const item = words.find(entry => entry.id === row?.dataset.id);
+        if (!item) return;
+        if (actionButton.dataset.action === "remove") {
+          words = words.filter(entry => entry.id !== item.id);
+          saveWords();
+          render();
+          showToast(`Đã xóa “${item.word}” khỏi kho.`);
+          return;
+        }
+        await playTwice(item, actionButton);
+      });
+
+      async function getAudio(word, selectedAccent) {
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+        if (!response.ok) throw new Error(response.status === 404 ? "Chưa tìm thấy bản ghi âm cho từ này." : "Không tải được phát âm lúc này.");
+        const data = await response.json();
+        const phonetics = data.flatMap(entry => entry.phonetics || []);
+        const desired = selectedAccent === "uk" ? /uk|gb|british/i : /us|american/i;
+        const withAudio = phonetics.filter(item => item.audio && item.audio.trim());
+        const phonetic = phonetics.find(item => item.text)?.text || "";
+        const match = withAudio.find(item => desired.test(item.audio) || desired.test(item.sourceUrl || "")) || withAudio[0];
+        if (!match) throw new Error("Từ điển chưa có audio cho từ này.");
+        return { url: match.audio, phonetic };
+      }
+
+      const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+      async function playTwice(item, button) {
+        if (activeAudio) {
+          activeAudio.pause();
+          activeAudio = null;
+        }
+        button.disabled = true;
+        const phoneticElement = listElement.querySelector(`[data-phonetic="${CSS.escape(item.id)}"]`);
+        if (phoneticElement) phoneticElement.textContent = "Đang tải audio…";
+        try {
+          const audioData = await getAudio(item.word, accent.value);
+          if (phoneticElement) phoneticElement.textContent = audioData.phonetic || `Phát âm ${accent.value.toUpperCase()} · nghe 2 lần`;
+          const audio = new Audio(audioData.url);
+          activeAudio = audio;
+          for (let count = 0; count < 2; count += 1) {
+            audio.currentTime = 0;
+            await audio.play();
+            await new Promise((resolve, reject) => {
+              audio.onended = resolve;
+              audio.onerror = () => reject(new Error("Không phát được audio trên thiết bị này."));
+            });
+            if (count === 0) await delay(550);
+          }
+        } catch (error) {
+          if (phoneticElement) phoneticElement.textContent = "Không tải được audio · mở Cambridge ↗";
+          showToast(error.message || "Không phát được audio. Hãy thử lại hoặc mở Cambridge.");
+        } finally {
+          if (activeAudio) activeAudio = null;
+          button.disabled = false;
+        }
+      }
+
+      accent.addEventListener("change", () => localStorage.setItem("word-cabinet.accent", accent.value));
+      try { accent.value = localStorage.getItem("word-cabinet.accent") || "uk"; } catch { /* storage may be disabled */ }
+      render();
+    })();
+  </script>
+</body>
+</html>
