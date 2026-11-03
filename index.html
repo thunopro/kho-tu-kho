@@ -175,7 +175,7 @@
             <option value="us">Anh-Mỹ (US)</option>
           </select>
         </div>
-        <p class="footer-note">Ưu tiên bản ghi giọng người trong từ điển. Nếu chưa có audio, ứng dụng dùng giọng đọc tiếng Anh UK/US của trình duyệt; nút “C” mở Cambridge để bạn đối chiếu.</p>
+        <p class="footer-note">Audio được tạo bằng giọng neural tiếng Anh của Microsoft trên máy chủ, không phụ thuộc giọng cài trên thiết bị. Nút “C” mở Cambridge để bạn đối chiếu.</p>
       </aside>
     </div>
   </main>
@@ -195,6 +195,7 @@
   <script>
     (() => {
       const STORAGE_KEY = "word-cabinet.words.v1";
+      const SPEECH_API = "https://kho-tu-kho.vercel.app/api/speak";
       const listElement = document.getElementById("word-list");
       const form = document.getElementById("add-form");
       const input = document.getElementById("word-input");
@@ -206,6 +207,8 @@
       let words = loadWords();
       let pendingWord = "";
       let activeAudio = null;
+      let activeAudioUrl = null;
+      let playbackId = 0;
       let toastTimer;
 
       function loadWords() {
@@ -320,59 +323,42 @@
         await playTwice(item, actionButton);
       });
 
-      async function getAudio(word, selectedAccent) {
-        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
-        if (!response.ok) throw new Error(response.status === 404 ? "Chưa tìm thấy bản ghi âm cho từ này." : "Không tải được phát âm lúc này.");
-        const data = await response.json();
-        const phonetics = data.flatMap(entry => entry.phonetics || []);
-        const desired = selectedAccent === "uk" ? /uk|gb|british/i : /us|american/i;
-        const withAudio = phonetics.filter(item => item.audio && item.audio.trim());
-        const match = withAudio.find(item => desired.test(item.audio) || desired.test(item.sourceUrl || "")) || withAudio[0];
-        if (!match) throw new Error("Từ điển chưa có audio cho từ này.");
-        const phonetic = match.text || phonetics.find(item => item.text)?.text || "";
-        return { url: match.audio, phonetic };
-      }
-
-      const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-      function speakWithEnglishVoice(text, selectedAccent) {
-        if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-          return Promise.reject(new Error("Trình duyệt không hỗ trợ giọng đọc dự phòng."));
+      async function getAudioUrl(word, selectedAccent) {
+        const url = `${SPEECH_API}?text=${encodeURIComponent(word)}&accent=${encodeURIComponent(selectedAccent)}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+          const detail = await response.json().catch(() => ({}));
+          throw new Error(detail.error || "Máy chủ chưa tạo được audio. Vui lòng thử lại.");
         }
-        const synth = window.speechSynthesis;
-        synth.cancel();
-        const voices = synth.getVoices();
-        const preferredLang = selectedAccent === "uk" ? /^en-GB$/i : /^en-US$/i;
-        const voice = voices.find(item => preferredLang.test(item.lang)) || voices.find(item => /^en(-|$)/i.test(item.lang));
-        return (async () => {
-          for (let count = 0; count < 2; count += 1) {
-            await new Promise((resolve, reject) => {
-              const utterance = new SpeechSynthesisUtterance(text);
-              utterance.lang = selectedAccent === "uk" ? "en-GB" : "en-US";
-              utterance.rate = 0.88;
-              if (voice) utterance.voice = voice;
-              utterance.onend = resolve;
-              utterance.onerror = () => reject(new Error("Không phát được giọng đọc trên thiết bị này."));
-              synth.speak(utterance);
-            });
-            if (count === 0) await delay(550);
-          }
-        })();
+        if (!response.headers.get("content-type")?.includes("audio/")) {
+          throw new Error("Máy chủ trả về dữ liệu không phải audio.");
+        }
+        return URL.createObjectURL(await response.blob());
       }
 
       async function playTwice(item, button) {
+        const requestId = ++playbackId;
         if (activeAudio) {
           activeAudio.pause();
           activeAudio = null;
         }
-        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        if (activeAudioUrl) {
+          URL.revokeObjectURL(activeAudioUrl);
+          activeAudioUrl = null;
+        }
         button.disabled = true;
         const phoneticElement = listElement.querySelector(`[data-phonetic="${CSS.escape(item.id)}"]`);
-        if (phoneticElement) phoneticElement.textContent = "Đang tải audio…";
+        if (phoneticElement) phoneticElement.textContent = "Đang tạo giọng neural…";
         try {
-          const audioData = await getAudio(item.word, accent.value);
-          if (phoneticElement) phoneticElement.textContent = audioData.phonetic || `Phát âm ${accent.value.toUpperCase()} · nghe 2 lần`;
-          const audio = new Audio(audioData.url);
+          const audioUrl = await getAudioUrl(item.word, accent.value);
+          if (requestId !== playbackId) {
+            URL.revokeObjectURL(audioUrl);
+            return;
+          }
+          activeAudioUrl = audioUrl;
+          const audio = new Audio(audioUrl);
           activeAudio = audio;
+          if (phoneticElement) phoneticElement.textContent = `Microsoft Neural · ${accent.value.toUpperCase()} · nghe 2 lần`;
           for (let count = 0; count < 2; count += 1) {
             audio.currentTime = 0;
             const ended = new Promise((resolve, reject) => {
@@ -381,19 +367,21 @@
             });
             await audio.play();
             await ended;
-            if (count === 0) await delay(550);
+            if (count === 0) await new Promise(resolve => setTimeout(resolve, 550));
           }
         } catch (error) {
-          try {
-            await speakWithEnglishVoice(item.word, accent.value);
-            if (phoneticElement) phoneticElement.textContent = `Giọng máy ${accent.value.toUpperCase()} · nghe 2 lần`;
-            showToast("Từ điển chưa có bản ghi âm giọng người; đang dùng giọng tiếng Anh của trình duyệt. Bấm C để đối chiếu Cambridge.");
-          } catch (fallbackError) {
-            if (phoneticElement) phoneticElement.textContent = "Chưa có audio · mở Cambridge ↗";
-            showToast(`${error.message || "Không có bản ghi âm."} ${fallbackError.message || "Hãy mở Cambridge để nghe."}`);
+          if (requestId === playbackId) {
+            if (phoneticElement) phoneticElement.textContent = "Lỗi tạo audio · mở Cambridge ↗";
+            showToast(`${error.message || "Không tạo được audio."} Bấm C để mở Cambridge.`);
           }
         } finally {
-          if (activeAudio) activeAudio = null;
+          if (requestId === playbackId) {
+            activeAudio = null;
+            if (activeAudioUrl) {
+              URL.revokeObjectURL(activeAudioUrl);
+              activeAudioUrl = null;
+            }
+          }
           button.disabled = false;
         }
       }
