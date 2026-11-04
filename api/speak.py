@@ -12,9 +12,10 @@ ALLOWED_ORIGINS = {
     "http://localhost:8000",
     "http://127.0.0.1:8000",
 }
+# Thêm giọng mới: thêm một mục vào VOICES. Giao diện tự lấy danh sách qua ?voices=1.
 VOICES = {
-    "uk": "en-GB-SoniaNeural",
-    "us": "en-US-AriaNeural",
+    "uk": {"voice": "en-GB-SoniaNeural", "label": "Anh-Anh (UK)"},
+    "us": {"voice": "en-US-AriaNeural", "label": "Anh-Mỹ (US)"},
 }
 
 
@@ -42,8 +43,22 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _json(self, status, payload):
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self._cors_headers()
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "public, max-age=3600")
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
         query = parse_qs(urlsplit(self.path).query)
+        if "voices" in query:
+            voices = [{"value": key, "label": item["label"]} for key, item in VOICES.items()]
+            return self._json(200, {"voices": voices})
+
         text = query.get("text", [""])[0].strip()
         accent = query.get("accent", ["uk"])[0].lower()
 
@@ -56,7 +71,7 @@ class handler(BaseHTTPRequestHandler):
         if any(ord(char) < 32 for char in text):
             return self._json_error(400, "Nội dung có ký tự không hợp lệ.")
 
-        voice = VOICES[accent]
+        voice = VOICES[accent]["voice"]
         try:
             audio = asyncio.run(self._synthesize(text, voice))
         except Exception:

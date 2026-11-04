@@ -1,22 +1,33 @@
-# Word Cabinet — Kho từ khó
+# Kho từ
 
-Ứng dụng web nhỏ để nhập, xác nhận, lưu và luyện phát âm từ vựng tiếng Anh. Danh sách được lưu trong `localStorage` của trình duyệt trên thiết bị hiện tại. Audio được tạo tại Vercel bằng Microsoft Edge neural TTS (giọng Sonia UK hoặc Aria US), không phụ thuộc voice cài trong máy người dùng.
+Ứng dụng web nhỏ để quản lý và luyện phát âm từ vựng tiếng Anh, giao diện kiểu VS Code: thư mục bên trái, danh sách từ ở giữa, terminal ở dưới. Audio được tạo tại Vercel bằng Microsoft Edge neural TTS.
 
 ## Chạy ứng dụng
-
-Trong thư mục dự án, chạy:
 
 ```bash
 npx vercel dev
 ```
 
-Sau đó mở URL local do Vercel CLI in ra. Có thể dùng `python3 -m http.server 8000` để xem giao diện tĩnh; trong trường hợp đó audio vẫn gọi API production trên Vercel.
+Hoặc `python3 -m http.server 8000` để xem giao diện tĩnh. Khi đó audio và publish vẫn gọi production trên Vercel (CORS cho phép `localhost:8000`).
 
 ## Cách dùng
 
-1. Nhập một từ hoặc cụm từ rồi bấm **Thêm vào kho**.
-2. Chọn **Xác nhận lưu** để đưa từ vào danh sách.
-3. Bấm vào từ hoặc biểu tượng loa để nghe audio giọng người hai lần.
-4. Chọn giọng Anh-Anh/Anh-Mỹ; bấm **C** cạnh từ để nghe/đối chiếu trực tiếp trên Cambridge Dictionary.
+- **`/` (kho trên máy)**: làm việc trên dữ liệu của trình duyệt, không cần đăng nhập.
+  - Gõ `add <từ>` trong terminal, xác nhận `y` để lưu. Từ mới được phát âm ngay.
+  - Tạo thư mục để gom từ: `mkdir week1`, `mkdir -p week2/day1`.
+  - Bấm **Publish** (hoặc gõ `publish`) để đưa kho lên server. Lần đầu tạo kho mới với số ID tự tăng; trình duyệt nhớ khóa để lần sau publish cập nhật đúng kho đó.
+- **`/1`, `/2`, ... (kho đã publish)**: chỉ xem và nghe, các lệnh ghi bị tắt.
+- **Phím 1–5**: phát từ gần nhất (1 là từ vừa phát gần nhất). Bấm khi ô nhập đang trống, không cần đưa con trỏ vào đâu.
+- **C**: mở Cambridge Dictionary để đối chiếu trọng âm và cách đọc. Cột IPA lấy từ dictionaryapi.dev, theo giọng đang chọn (UK/US).
+- **Ctrl+`**: ẩn/hiện terminal.
 
-Endpoint `/api/speak` trả audio MP3 từ Microsoft Edge neural TTS, có cache CDN một ngày và cho phép gọi từ Vercel/GitHub Pages. Không dùng giọng tổng hợp cài cục bộ trong trình duyệt nữa. Cambridge vẫn có liên kết riêng để đối chiếu từ điển, trọng âm và nghĩa theo ngữ cảnh. Danh sách từ được lưu cục bộ trên thiết bị, không tải lên máy chủ.
+Các lệnh terminal: `help`, `pwd`, `ls [-l]`, `cd`, `tree`, `mkdir [-p]`, `rmdir`, `rm [-r]`, `mv`, `cat`, `add`, `play`, `publish`, `history`, `clear`. Tab để hoàn thành tên, mũi tên lên/xuống để gọi lại lệnh cũ.
+
+Giới hạn: tối đa 200 từ, 60 thư mục, lồng tối đa 4 cấp; mỗi từ tối đa 80 ký tự; dữ liệu gửi lên tối đa 64KB.
+
+## Backend
+
+- `api/speak.py`: trả audio MP3 từ Edge neural TTS. `?voices=1` trả danh sách giọng; để thêm giọng mới, thêm một mục vào `VOICES`.
+- `api/kho.py`: `GET /api/kho?id=N` đọc kho đã publish; `POST /api/kho` với `action: "publish"` tạo hoặc cập nhật kho. Dữ liệu kiểu cũ (danh sách phẳng) được đọc như thư mục `week1`.
+- Dữ liệu kho lưu trong Neon Postgres (bảng `kho`), kết nối qua biến môi trường `DATABASE_URL` của Vercel project.
+- `vercel.json` rewrite `/:id` về `index.html` để các link `/N` hoạt động.

@@ -3,6 +3,12 @@
   "functions": {
     "api/speak.py": {
       "maxDuration": 30
+    },
+    "api/kho.py": {
+      "maxDuration": 15
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/:id(\\d+)", "destination": "/index.html" }
+  ]
 }
