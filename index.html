@@ -3,242 +3,177 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#1e1e1e">
+  <meta name="theme-color" content="#ffffff">
   <title>Kho từ</title>
   <style>
-    :root {
-      --bg: #1e1e1e;
-      --side: #252526;
-      --bar: #3c3c3c;
-      --line: #2b2b2b;
-      --text: #cccccc;
-      --muted: #8b8b8b;
-      --hover: #2a2d2e;
-      --active: #37373d;
-      --accent: #007acc;
-      --green: #4ec9b0;
-      --blue: #569cd6;
-      --yellow: #dcdcaa;
-      --red: #f48771;
-    }
     * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
-    body { background: var(--bg); color: var(--text); font: 13px/1.45 "Segoe UI", system-ui, sans-serif; overflow: hidden; }
-    button, input, select { font: inherit; color: inherit; }
+    body { margin: 0; font: 18px/1.5 "Segoe UI", system-ui, sans-serif; background: #ffffff; color: #111111; }
     .hidden { display: none !important; }
-    .app { height: 100vh; display: flex; flex-direction: column; }
 
-    .titlebar { height: 34px; flex: 0 0 auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 10px; background: var(--bar); font-size: 12px; }
-    .brand { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-    .brand-mark { width: 16px; height: 16px; display: grid; place-items: center; border-radius: 4px; background: var(--accent); color: #fff; font-size: 10px; }
-    .title-center { color: #c5c5c5; }
-    .title-actions { justify-self: end; display: flex; align-items: center; gap: 8px; }
-    .accent-select, .titlebtn { height: 24px; padding: 0 8px; border: 1px solid #454545; border-radius: 3px; background: #313131; font-size: 12px; }
-    .titlebtn { border-color: var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
-    .titlebtn:disabled { opacity: .5; cursor: wait; }
+    .top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; padding: 14px 24px; border-bottom: 1px solid #dddddd; }
+    .brand { font-size: 24px; font-weight: 700; }
+    .top-right { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+    .count { font-size: 17px; color: #555555; }
+    .voice { display: flex; align-items: center; gap: 8px; font-size: 17px; }
 
-    .workbench { flex: 1; display: flex; min-height: 0; }
-    .explorer { width: 250px; flex: 0 0 auto; display: flex; flex-direction: column; min-width: 0; background: var(--side); border-right: 1px solid var(--line); }
-    .side-head { height: 30px; display: flex; align-items: center; padding: 0 14px; color: #bbb; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
-    .tree { flex: 1; overflow: auto; padding-bottom: 10px; }
-    .tree-row { display: flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px 0 calc(6px + var(--d) * 12px); color: #d4d4d4; white-space: nowrap; cursor: pointer; }
-    .tree-row:hover { background: var(--hover); }
-    .tree-row.active { background: var(--active); color: #fff; }
-    .chev { width: 14px; flex: 0 0 auto; color: #c5c5c5; font-size: 10px; text-align: center; }
-    .name { overflow: hidden; text-overflow: ellipsis; }
-    .ico { display: inline-flex; flex: 0 0 auto; color: #c5c5c5; }
-    .ico.word { color: #9cdcfe; }
+    .input, select { font: inherit; font-size: 18px; height: 48px; padding: 0 12px; border: 1px solid #bbbbbb; border-radius: 6px; background: #ffffff; color: inherit; }
+    .input:focus, select:focus { outline: 2px solid #111111; outline-offset: 1px; }
+    .btn { font: inherit; font-size: 17px; height: 46px; padding: 0 18px; border: 1px solid #bbbbbb; border-radius: 6px; background: #ffffff; color: #111111; cursor: pointer; white-space: nowrap; }
+    .btn:hover { background: #f2f2f2; }
+    .btn:disabled { opacity: .5; cursor: wait; }
+    .btn.primary { background: #111111; border-color: #111111; color: #ffffff; }
+    .btn.primary:hover { background: #333333; }
+    .btn.danger { border-color: #111111; }
+    .btn.small { height: 38px; padding: 0 14px; font-size: 16px; }
 
-    .editor { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg); }
-    .tabs { height: 30px; display: flex; background: var(--side); border-bottom: 1px solid var(--line); }
-    .tab { display: flex; align-items: center; gap: 6px; padding: 0 14px; border-top: 1px solid var(--accent); background: var(--bg); color: #fff; font-size: 12px; }
-    .breadcrumb { height: 24px; display: flex; align-items: center; gap: 4px; padding: 0 14px; color: var(--muted); font-size: 12px; }
-    .breadcrumb button { padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
-    .breadcrumb button:hover { color: #fff; }
-    .sep { color: #666; }
-    .content { flex: 1; overflow: auto; padding: 4px 0; }
-    .item { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 14px; cursor: pointer; }
-    .item:hover { background: var(--hover); }
-    .item .name { flex: 1 1 auto; }
-    .item .meta { margin-left: auto; color: var(--muted); font-size: 12px; white-space: nowrap; }
-    .item .status { color: var(--muted); font-size: 12px; white-space: nowrap; }
-    .ipa { flex: 0 1 auto; max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #9cdcfe; font: 12.5px Consolas, "DejaVu Sans Mono", monospace; }
-    .hk { min-width: 22px; height: 18px; display: inline-grid; place-items: center; padding: 0 5px; border: 1px solid #555; border-radius: 4px; color: #bbb; font: 11px Consolas, monospace; }
-    .hk.blank { border-color: transparent; }
-    .icon-btn { width: 24px; height: 24px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #bbb; cursor: pointer; }
-    .icon-btn:hover { background: #3c3c3c; color: #fff; }
-    .icon-btn:disabled { opacity: .5; cursor: wait; }
-    .icon-btn.remove:hover { color: var(--red); }
-    .cam { padding: 0 4px; color: #75beff; font-weight: 700; text-decoration: none; }
-    .empty { padding: 40px 20px; color: var(--muted); }
+    .crumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; padding: 14px 24px 0; font-size: 18px; }
+    .crumbs button { padding: 4px 6px; border: 0; background: none; color: #111111; font: inherit; cursor: pointer; text-decoration: underline; }
+    .crumbs button:hover { background: #f2f2f2; }
+    .crumbs .sep { color: #888888; }
+    .crumbs .back { margin-right: 10px; text-decoration: none; }
 
-    .terminal { height: 240px; flex: 0 0 auto; display: flex; flex-direction: column; background: #181818; border-top: 1px solid #444; }
-    .term-head { height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid var(--line); color: #ccc; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; }
-    .term-close { padding: 0; border: 0; background: none; color: #aaa; font-size: 16px; line-height: 1; cursor: pointer; }
-    .term-body { flex: 1; overflow: auto; padding: 6px 12px; white-space: pre-wrap; word-break: break-word; font: 12.5px/1.5 Consolas, "DejaVu Sans Mono", monospace; }
-    .term-line { min-height: 1.5em; }
-    .term-line.echo { color: #e0e0e0; }
-    .term-line.err { color: var(--red); }
-    .term-line.ok { color: var(--green); }
-    .term-line.muted { color: var(--muted); }
-    .term-line.warn { color: var(--yellow); }
-    .term-line .dir { color: var(--blue); }
-    .term-input-row { display: flex; align-items: center; padding: 0 12px 8px; font: 12.5px Consolas, "DejaVu Sans Mono", monospace; }
-    .prompt { white-space: pre; color: var(--green); }
-    .term-input { flex: 1; min-width: 0; padding: 0; border: 0; outline: 0; background: transparent; color: #e0e0e0; caret-color: #fff; font: inherit; }
+    .main { max-width: 960px; padding: 14px 24px 56px; }
+    .main h2.title { margin: 0 0 2px; font-size: 28px; }
+    .sub { margin: 0 0 16px; color: #666666; font-size: 17px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
 
-    .statusbar { height: 22px; flex: 0 0 auto; display: flex; align-items: center; gap: 14px; padding: 0 10px; background: var(--accent); color: #fff; font-size: 12px; }
-    .status-btn { padding: 0; border: 0; background: none; color: #fff; cursor: pointer; }
-    .status-right { margin-left: auto; }
-    .status-right a { color: #fff; }
-    .toast { position: fixed; right: 16px; bottom: 34px; z-index: 5; max-width: 360px; padding: 10px 14px; border: 1px solid #454545; border-radius: 4px; background: #252526; box-shadow: 0 6px 20px #0008; font-size: 12.5px; opacity: 0; transform: translateY(8px); transition: .2s; pointer-events: none; }
-    .toast.show { opacity: 1; transform: none; }
-    @media (max-width: 700px) { .explorer { display: none; } }
+    .card { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; padding: 10px 14px; border: 1px solid #dddddd; border-radius: 6px; }
+    .card-main { flex: 1; min-width: 0; padding: 6px 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+    .card-main:hover .card-name { text-decoration: underline; }
+    .card-name { display: block; font-size: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-meta { display: block; color: #666666; font-size: 16px; }
+    .card-btns { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+
+    .add-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .add-form .input { flex: 1; min-width: 220px; height: 52px; font-size: 20px; }
+    .add-form .btn { height: 52px; font-size: 18px; padding: 0 24px; }
+
+    .word-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; padding: 10px 14px; border: 1px solid #dddddd; border-radius: 6px; }
+    .slot { width: 32px; height: 32px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #111111; border-radius: 50%; font-size: 16px; font-weight: 700; }
+    .slot.empty { border-color: transparent; }
+    .word-text { flex: 1; min-width: 160px; }
+    .word-name { font-size: 22px; font-weight: 700; }
+    .ipa { color: #444444; font-size: 17px; }
+
+    .empty { padding: 26px; text-align: center; color: #666666; border: 1px dashed #bbbbbb; border-radius: 6px; font-size: 17px; }
+
+    .toast { position: fixed; left: 50%; bottom: 24px; max-width: 90vw; padding: 12px 20px; border-radius: 6px; background: #111111; color: #ffffff; font-size: 16px; opacity: 0; transform: translate(-50%, 16px); transition: .25s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .4); }
+    .dialog { width: min(460px, 100%); max-height: 86vh; overflow: auto; padding: 24px; background: #ffffff; border: 1px solid #111111; border-radius: 6px; }
+    .dialog h2 { margin: 0 0 12px; font-size: 22px; }
+    .dialog p { margin: 0 0 18px; font-size: 18px; }
+    .dialog .input { width: 100%; margin-bottom: 18px; }
+    .dialog .choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .dialog .choices .btn { width: 100%; text-align: left; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .row.end { justify-content: flex-end; }
+
+    @media (max-width: 640px) {
+      .top { padding: 12px 16px; }
+      .main { padding: 12px 14px 48px; }
+      .crumbs { padding: 12px 14px 0; }
+      .card-btns { width: 100%; justify-content: flex-start; }
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header class="titlebar">
-      <div class="brand"><span class="brand-mark">K</span><span>Kho từ</span></div>
-      <div class="title-center" id="title-center"></div>
-      <div class="title-actions">
-        <select class="accent-select" id="accent" aria-label="Giọng phát âm"><option value="uk">Anh-Anh (UK)</option></select>
-        <button class="titlebtn" id="publish-button" type="button">Publish</button>
-      </div>
-    </header>
-
-    <div class="workbench">
-      <aside class="explorer" aria-label="Thư mục">
-        <div class="side-head">Kho từ</div>
-        <div class="tree" id="tree"></div>
-      </aside>
-      <section class="editor" aria-label="Nội dung">
-        <div class="tabs"><div class="tab" id="tab-title">kho</div></div>
-        <nav class="breadcrumb" id="breadcrumb" aria-label="Đường dẫn"></nav>
-        <div class="content" id="content"></div>
-      </section>
+  <header class="top">
+    <div class="brand">Kho từ</div>
+    <div class="top-right">
+      <span class="count" id="count"></span>
+      <label class="voice">Giọng đọc
+        <select id="voice" aria-label="Giọng đọc"><option value="uk">Anh-Anh (UK)</option></select>
+      </label>
     </div>
-
-    <section class="terminal" id="terminal" aria-label="Terminal">
-      <div class="term-head">
-        <span>Terminal</span>
-        <button class="term-close" id="term-close" type="button" aria-label="Ẩn terminal">×</button>
-      </div>
-      <div class="term-body" id="term-output"></div>
-      <div class="term-input-row">
-        <span class="prompt" id="prompt"></span>
-        <input class="term-input" id="term-input" autocomplete="off" spellcheck="false" aria-label="Nhập lệnh">
-      </div>
-    </section>
-
-    <footer class="statusbar">
-      <button class="status-btn" id="toggle-terminal" type="button">Terminal · Ctrl+`</button>
-      <span id="status-count"></span>
-      <span class="status-right" id="status-publish"></span>
-    </footer>
-  </div>
+  </header>
+  <nav class="crumbs" id="crumbs" aria-label="Đường dẫn"></nav>
+  <main class="main" id="view"></main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="backdrop hidden" id="backdrop">
+    <div class="dialog" id="dialog" role="dialog" aria-modal="true"></div>
+  </div>
 
   <script>
     (() => {
       "use strict";
-      const API = "https://kho-tu-kho.vercel.app/api/kho";
       const SPEECH_API = "https://kho-tu-kho.vercel.app/api/speak";
-      const PUBLIC_ORIGIN = "https://kho-tu-kho.vercel.app";
-      const TREE_KEY = "word-cabinet.tree.v2";
+      const STORE_KEY = "word-cabinet.store.v3";
+      const OLD_TREE_KEY = "word-cabinet.tree.v2";
       const OLD_WORDS_KEY = "word-cabinet.words.v1";
-      const PUBLISH_KEY = "word-cabinet.publish.v1";
-      const ACCENT_KEY = "word-cabinet.accent";
-      const MAX_FILES = 200;
+      const VOICE_KEY = "word-cabinet.accent";
+      const IPA_KEY = "word-cabinet.ipa.v1";
+      const RECENT_KEY = "word-cabinet.recent.local";
+      const MAX_WORDS = 1000;
+      const MAX_FILES = 100;
       const MAX_FOLDERS = 60;
       const MAX_DEPTH = 4;
-      const MAX_NAME = 80;
-      const MAX_FOLDER_NAME = 40;
+      const MAX_NAME = 40;
+      const MAX_WORD = 80;
       const RECENT_LIMIT = 20;
       const HOTKEYS = 5;
       const VOICE_FALLBACK = [
         { value: "uk", label: "Anh-Anh (UK)" },
         { value: "us", label: "Anh-Mỹ (US)" },
       ];
-      const VIEWER_COMMANDS = new Set(["help", "clear", "pwd", "history", "ls", "cd", "cat", "tree", "play"]);
-      const ICON = {
-        folder: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.7v8.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>',
-        word: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M9 12h6M9 16h4"/></svg>',
-        play: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>',
-        trash: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6"/></svg>',
-      };
-
-      const match = location.pathname.match(/^\/(\d{1,18})\/?$/);
-      const khoId = match ? match[1] : "";
-      const isViewer = Boolean(khoId);
-      const RECENT_KEY = `word-cabinet.recent.${isViewer ? `kho${khoId}` : "local"}`;
+      const LEGACY_FOLDER = "week1";
+      const LEGACY_FILE = "từ cũ";
 
       const $ = id => document.getElementById(id);
-      const explorerEl = $("tree");
-      const contentEl = $("content");
-      const crumbsEl = $("breadcrumb");
-      const tabEl = $("tab-title");
-      const termPanel = $("terminal");
-      const termOut = $("term-output");
-      const termIn = $("term-input");
-      const promptEl = $("prompt");
-      const accentEl = $("accent");
-      const publishBtn = $("publish-button");
-      const statusCount = $("status-count");
-      const statusPublish = $("status-publish");
-      const titleCenter = $("title-center");
+      const view = $("view");
+      const crumbsEl = $("crumbs");
       const toastEl = $("toast");
+      const backdrop = $("backdrop");
+      const dialogEl = $("dialog");
+      const voiceEl = $("voice");
+      const countEl = $("count");
 
       let root = { type: "dir", name: "", children: [] };
-      let cwd = [];
-      const openState = new Map();
-      let loadError = "";
-      let pendingAdd = null;
-      const cmdHistory = [];
-      let histPos = 0;
-      let recent = loadRecent();
-      let publishedId = (readPublish() || {}).id || "";
+      let current = [];
+      let recent = readJSON(RECENT_KEY, []).filter(item => typeof item === "string").slice(0, RECENT_LIMIT);
+      let dialogCancel = null;
       let playbackId = 0;
-      let currentKey = null;
       let cancelCurrent = null;
       let activeAudio = null;
       let activeAudioUrl = null;
       let toastTimer;
 
-      // ---------- storage ----------
+      // ---------- lưu trữ trên máy ----------
       function safeGet(key) { try { return localStorage.getItem(key); } catch { return null; } }
       function safeSet(key, value) { try { localStorage.setItem(key, value); return true; } catch { return false; } }
       function readJSON(key, fallback) {
         try { return JSON.parse(safeGet(key) ?? "null") ?? fallback; } catch { return fallback; }
       }
-      function readPublish() { return readJSON(PUBLISH_KEY, null); }
-      function writePublish(value) { safeSet(PUBLISH_KEY, JSON.stringify(value)); }
 
-      function loadLocalTree() {
-        const saved = readJSON(TREE_KEY, null);
-        if (Array.isArray(saved)) return saved;
-        // Dữ liệu từ phiên bản cũ (danh sách phẳng) được chuyển vào thư mục week1.
-        const old = readJSON(OLD_WORDS_KEY, []);
-        if (!Array.isArray(old)) return [];
-        const files = old
-          .filter(item => item && typeof item.word === "string" && item.word.trim())
-          .map(item => ({
-            type: "file",
-            name: item.word.trim().replace(/\s+/g, " ").slice(0, MAX_NAME),
-            addedAt: Number(item.addedAt) || 0,
-          }));
-        return files.length ? [{ type: "dir", name: "week1", children: files }] : [];
-      }
-
-      function saveTree() {
-        if (!safeSet(TREE_KEY, JSON.stringify(root.children))) {
-          showToast("Không thể lưu trên thiết bị này. Hãy kiểm tra dung lượng trình duyệt.");
+      // Đưa dữ liệu từ các phiên bản trước vào cấu trúc hiện tại.
+      function convertFromV2(children) {
+        const result = [];
+        const loose = [];
+        for (const node of children) {
+          if (node.type === "dir") result.push({ type: "dir", name: node.name, children: convertFromV2(node.children || []) });
+          else loose.push({ word: node.name, addedAt: Number(node.addedAt) || 0 });
         }
+        if (loose.length) result.push({ type: "file", name: "từ", words: loose });
+        return result;
       }
 
-      function loadRecent() {
-        const value = readJSON(RECENT_KEY, []);
-        return Array.isArray(value) ? value.filter(item => typeof item === "string").slice(0, RECENT_LIMIT) : [];
+      function loadStore() {
+        const saved = readJSON(STORE_KEY, null);
+        if (Array.isArray(saved)) return saved;
+        const v2 = readJSON(OLD_TREE_KEY, null);
+        if (Array.isArray(v2)) return convertFromV2(v2);
+        const v1 = readJSON(OLD_WORDS_KEY, []);
+        const words = (Array.isArray(v1) ? v1 : [])
+          .filter(item => item && typeof item.word === "string" && item.word.trim())
+          .map(item => ({ word: item.word.trim().replace(/\s+/g, " ").slice(0, MAX_WORD), addedAt: Number(item.addedAt) || 0 }));
+        return words.length ? [{ type: "dir", name: LEGACY_FOLDER, children: [{ type: "file", name: LEGACY_FILE, words }] }] : [];
+      }
+
+      function saveStore() {
+        if (!safeSet(STORE_KEY, JSON.stringify(root.children))) {
+          toast("Không lưu được trên máy này. Hãy kiểm tra dung lượng trình duyệt.");
+        }
       }
 
       function touchRecent(key) {
@@ -246,60 +181,39 @@
         safeSet(RECENT_KEY, JSON.stringify(recent));
       }
 
-      // ---------- tree helpers ----------
+      // ---------- cây thư mục ----------
       const pathKey = parts => JSON.stringify(parts);
       const sameParts = (a, b) => a.length === b.length && a.every((part, i) => part === b[i]);
       const isPrefix = (prefix, parts) => prefix.length <= parts.length && prefix.every((part, i) => parts[i] === part);
 
-      function findChild(dir, name) {
-        return dir.children.find(c => c.name === name)
-          || dir.children.find(c => c.name.toLowerCase() === name.toLowerCase())
-          || null;
-      }
-
       function getNode(parts) {
         let node = root;
         for (const name of parts) {
-          if (node.type !== "dir") return null;
-          node = findChild(node, name);
-          if (!node) return null;
+          if (!node || node.type !== "dir") return null;
+          node = node.children.find(child => child.name === name) || null;
         }
         return node;
       }
 
-      function normalize(input) {
-        let base = [...cwd];
-        let text = input;
-        if (text === "~" || text.startsWith("~/")) { base = []; text = text.slice(1); }
-        else if (text.startsWith("/")) base = [];
-        for (const seg of text.split("/")) {
-          if (!seg || seg === ".") continue;
-          if (seg === "..") base.pop();
-          else base.push(seg);
-        }
-        return base;
-      }
-
       function sortedChildren(dir) {
-        const dirs = dir.children.filter(c => c.type === "dir").sort((a, b) => a.name.localeCompare(b.name, "vi"));
-        const files = dir.children.filter(c => c.type === "file").sort((a, b) => b.addedAt - a.addedAt);
-        return [...dirs, ...files];
+        const byName = (a, b) => a.name.localeCompare(b.name, "vi");
+        return [...dir.children.filter(c => c.type === "dir").sort(byName), ...dir.children.filter(c => c.type === "file").sort(byName)];
       }
 
-      function countIn(node) {
-        let dirs = 0;
-        let files = 0;
-        for (const child of node.children || []) {
-          if (child.type === "dir") {
-            dirs += 1;
-            const sub = countIn(child);
-            dirs += sub.dirs;
-            files += sub.files;
-          } else {
-            files += 1;
-          }
+      function totals(node) {
+        const result = { folders: 0, files: 0, words: 0 };
+        if (node.type === "file") {
+          result.files = 1;
+          result.words = node.words.length;
+          return result;
         }
-        return { dirs, files };
+        for (const child of node.children) {
+          const sub = totals(child);
+          result.folders += child.type === "dir" ? 1 + sub.folders : sub.folders;
+          result.files += sub.files;
+          result.words += sub.words;
+        }
+        return result;
       }
 
       function height(node) {
@@ -309,84 +223,328 @@
         return h + 1;
       }
 
-      function displayPath(parts) { return "/" + parts.join("/"); }
-      function fileTotal() { return countIn(root).files; }
-      function folderTotal() { return countIn(root).dirs; }
-      function fmtDate(ts) { return ts ? new Date(ts).toLocaleDateString("vi-VN") : "-"; }
-
-      function assertFolderAllowed(depth) {
-        if (depth > MAX_DEPTH) throw new Error(`thư mục chỉ được lồng tối đa ${MAX_DEPTH} cấp`);
-        if (folderTotal() >= MAX_FOLDERS) throw new Error(`kho tối đa ${MAX_FOLDERS} thư mục`);
-      }
-
-      function checkName(name, max) {
-        if (!name || name === "." || name === ".." || name.length > max || /[\/\x00-\x1f\x7f]/.test(name)) {
-          throw new Error(`tên không hợp lệ: '${name}'`);
+      function checkName(name) {
+        if (!name || name === "." || name === ".." || name.length > MAX_NAME || /[\/\x00-\x1f\x7f]/.test(name)) {
+          throw new Error(`Tên dùng tối đa ${MAX_NAME} ký tự và không có dấu “/”.`);
         }
       }
 
-      function removeNode(parts) {
-        const parent = getNode(parts.slice(0, -1));
-        const node = getNode(parts);
-        parent.children.splice(parent.children.indexOf(node), 1);
-        if (isPrefix(parts, cwd)) cwd = parts.slice(0, -1);
-      }
-
-      function serialize(children) {
-        return children.map(node => node.type === "dir"
-          ? { type: "dir", name: node.name, children: serialize(node.children) }
-          : { type: "file", name: node.name, addedAt: node.addedAt });
-      }
-
-      // ---------- networking ----------
-      async function request(url, options = {}) {
-        const response = await fetch(url, options);
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || "Có lỗi xảy ra. Vui lòng thử lại.");
-        return data;
-      }
-
-      async function publishTree() {
-        const saved = readPublish();
-        const body = { action: "publish", tree: serialize(root.children) };
-        if (saved?.id && saved?.key) {
-          body.id = saved.id;
-          body.key = saved.key;
+      function ensureUniqueName(dir, name, exceptNode = null) {
+        if (dir.children.some(c => c !== exceptNode && c.name.toLowerCase() === name.toLowerCase())) {
+          throw new Error(`Đã có “${name}” trong thư mục này.`);
         }
-        const data = await request(API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        if (data.key) writePublish({ id: data.id, key: data.key });
-        publishedId = data.id;
-        renderStatus();
-        return data;
       }
 
+      // ---------- giọng đọc ----------
       async function loadVoices() {
         let list = VOICE_FALLBACK;
         try {
-          const data = await request(`${SPEECH_API}?voices=1`);
+          const response = await fetch(`${SPEECH_API}?voices=1`);
+          const data = await response.json();
           if (Array.isArray(data.voices) && data.voices.length) list = data.voices;
         } catch { /* dùng danh sách mặc định */ }
-        const saved = safeGet(ACCENT_KEY) || "uk";
-        accentEl.innerHTML = list
-          .map(v => `<option value="${escapeHtml(v.value)}">${escapeHtml(v.label)}</option>`)
-          .join("");
-        accentEl.value = list.some(v => v.value === saved) ? saved : list[0].value;
+        const saved = safeGet(VOICE_KEY) || "uk";
+        voiceEl.innerHTML = list.map(v => `<option value="${escapeHtml(v.value)}">${escapeHtml(v.label)}</option>`).join("");
+        voiceEl.value = list.some(v => v.value === saved) ? saved : list[0].value;
       }
 
-      accentEl.addEventListener("change", () => {
-        safeSet(ACCENT_KEY, accentEl.value);
-        renderContent();
+      voiceEl.addEventListener("change", () => {
+        safeSet(VOICE_KEY, voiceEl.value);
+        render();
       });
 
+      // ---------- giao diện ----------
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+      }
+
+      function toast(message) {
+        toastEl.textContent = message;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3000);
+      }
+
+      function go(parts) {
+        current = parts;
+        render();
+        window.scrollTo(0, 0);
+      }
+
+      function render() {
+        if (!getNode(current)) current = [];
+        countEl.textContent = `${totals(root).words} / ${MAX_WORDS} từ`;
+        renderCrumbs();
+        renderView();
+      }
+
+      function renderCrumbs() {
+        const parts = [];
+        if (current.length) parts.push('<button class="back" type="button" data-back>← Quay lại</button>');
+        parts.push(`<button type="button" data-go="[]">Trang chủ</button>`);
+        current.forEach((name, i) => {
+          parts.push(`<span class="sep">/</span><button type="button" data-go="${escapeHtml(pathKey(current.slice(0, i + 1)))}">${escapeHtml(name)}</button>`);
+        });
+        crumbsEl.innerHTML = parts.join("");
+      }
+
+      function renderView() {
+        const node = getNode(current);
+        if (node.type === "dir") renderFolder(node);
+        else renderFile(node);
+      }
+
+      function cardHtml(node, parts) {
+        const key = escapeHtml(pathKey(parts));
+        const sub = totals(node);
+        const meta = node.type === "dir" ? `${sub.folders} thư mục · ${sub.words} từ` : `${sub.words} từ`;
+        return `<div class="card">
+          <button class="card-main" type="button" data-open="${key}">
+            <span class="card-name">${escapeHtml(node.name)}${node.type === "dir" ? "/" : ""}</span>
+            <span class="card-meta">${meta}</span>
+          </button>
+          <div class="card-btns">
+            <button class="btn small" type="button" data-action="rename" data-path="${key}">Đổi tên</button>
+            <button class="btn small" type="button" data-action="move" data-path="${key}">Di chuyển</button>
+            <button class="btn small danger" type="button" data-action="delete" data-path="${key}">Xóa</button>
+          </div>
+        </div>`;
+      }
+
+      function renderFolder(dir) {
+        const kids = sortedChildren(dir);
+        const list = kids.length
+          ? kids.map(kid => cardHtml(kid, [...current, kid.name])).join("")
+          : '<div class="empty">Chưa có gì ở đây. Bấm “Thư mục mới” hoặc “File mới”.</div>';
+        view.innerHTML = `<h2 class="title">${current.length ? escapeHtml(dir.name) : "Trang chủ"}</h2>
+          <p class="sub">${current.length ? "Thư mục" : "Thư mục và file của bạn"}</p>
+          <div class="toolbar">
+            <button class="btn primary" type="button" data-new="dir">Thư mục mới</button>
+            <button class="btn primary" type="button" data-new="file">File mới</button>
+          </div>
+          ${list}`;
+      }
+
+      function wordRowHtml(fileParts, item) {
+        const key = pathKey([...fileParts, item.word]);
+        const safeKey = escapeHtml(key);
+        const slot = recent.indexOf(key) + 1;
+        const badge = slot > 0 && slot <= HOTKEYS ? `<span class="slot">${slot}</span>` : '<span class="slot empty"></span>';
+        const cambridge = `https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(item.word.toLowerCase()).replace(/%20/g, "-")}`;
+        return `<div class="word-row" data-key="${safeKey}">
+          ${badge}
+          <button class="btn small" type="button" data-action="play" data-key="${safeKey}">Nghe</button>
+          <div class="word-text"><div class="word-name">${escapeHtml(item.word)}</div><div class="ipa" data-ipa="${escapeHtml(item.word.toLowerCase())}">${escapeHtml(ipaText(item.word))}</div></div>
+          <a class="btn small" href="${cambridge}" target="_blank" rel="noopener noreferrer">Cambridge</a>
+          <button class="btn small danger" type="button" data-action="del-word" data-word="${escapeHtml(item.word)}">Xóa</button>
+        </div>`;
+      }
+
+      function renderFile(file) {
+        const words = [...file.words].sort((a, b) => b.addedAt - a.addedAt);
+        words.forEach(item => queueIpa(item.word));
+        const rows = words.length
+          ? words.map(item => wordRowHtml(current, item)).join("")
+          : '<div class="empty">File này chưa có từ nào. Nhập từ ở ô trên rồi bấm “Thêm”.</div>';
+        view.innerHTML = `<h2 class="title">${escapeHtml(file.name)}</h2>
+          <p class="sub">${file.words.length} từ</p>
+          <form class="add-form" id="add-form">
+            <input class="input" id="word-input" placeholder="Nhập từ tiếng Anh" maxlength="${MAX_WORD}" autocomplete="off">
+            <button class="btn primary" type="submit">Thêm</button>
+          </form>
+          ${rows}`;
+      }
+
+      // ---------- hộp thoại ----------
+      function showDialog(build, cancelValue) {
+        return new Promise(resolve => {
+          const finish = value => {
+            backdrop.classList.add("hidden");
+            dialogEl.innerHTML = "";
+            dialogCancel = null;
+            resolve(value);
+          };
+          dialogCancel = () => finish(cancelValue);
+          dialogEl.innerHTML = "";
+          backdrop.classList.remove("hidden");
+          build(dialogEl, finish);
+        });
+      }
+
+      backdrop.addEventListener("mousedown", event => {
+        if (event.target === backdrop && dialogCancel) dialogCancel();
+      });
+
+      function ask(title, value = "", okText = "Tạo") {
+        return showDialog((el, done) => {
+          el.innerHTML = `<h2>${escapeHtml(title)}</h2>
+            <input class="input" id="dlg-input" maxlength="${MAX_NAME}" value="${escapeHtml(value)}">
+            <div class="row end"><button class="btn" type="button" data-cancel>Hủy</button><button class="btn primary" type="button" data-ok>${escapeHtml(okText)}</button></div>`;
+          const input = el.querySelector("#dlg-input");
+          const submit = () => done(input.value.trim() || null);
+          el.querySelector("[data-ok]").onclick = submit;
+          el.querySelector("[data-cancel]").onclick = () => done(null);
+          input.onkeydown = event => { if (event.key === "Enter") submit(); };
+          input.focus();
+          input.select();
+        }, null);
+      }
+
+      function confirmBox(title, text, okText, cancelText, danger = false) {
+        return showDialog((el, done) => {
+          el.innerHTML = `<h2>${escapeHtml(title)}</h2><p>${escapeHtml(text)}</p>
+            <div class="row end"><button class="btn" type="button" data-cancel>${escapeHtml(cancelText)}</button><button class="btn ${danger ? "danger" : "primary"}" type="button" data-ok>${escapeHtml(okText)}</button></div>`;
+          el.querySelector("[data-ok]").onclick = () => done(true);
+          el.querySelector("[data-cancel]").onclick = () => done(false);
+          el.querySelector("[data-ok]").focus();
+        }, false);
+      }
+
+      function pickFolder(title, targets) {
+        return showDialog((el, done) => {
+          el.innerHTML = `<h2>${escapeHtml(title)}</h2><div class="choices">${targets.map((t, i) =>
+            `<button class="btn" type="button" data-choice="${i}">${escapeHtml(t.label)}</button>`).join("")}</div>
+            <div class="row end"><button class="btn" type="button" data-cancel>Hủy</button></div>`;
+          el.querySelectorAll("[data-choice]").forEach(button => {
+            button.onclick = () => done(targets[Number(button.dataset.choice)].parts);
+          });
+          el.querySelector("[data-cancel]").onclick = () => done(null);
+        }, null);
+      }
+
+      // ---------- thư mục và file ----------
+      async function createItem(kind) {
+        const name = await ask(kind === "dir" ? "Tên thư mục mới" : "Tên file mới", "", "Tạo");
+        if (!name) return;
+        try {
+          checkName(name);
+          const dir = getNode(current);
+          ensureUniqueName(dir, name);
+          const counts = totals(root);
+          if (kind === "dir") {
+            if (current.length + 1 > MAX_DEPTH) throw new Error(`Thư mục chỉ được lồng tối đa ${MAX_DEPTH} cấp.`);
+            if (counts.folders >= MAX_FOLDERS) throw new Error(`Tối đa ${MAX_FOLDERS} thư mục.`);
+            dir.children.push({ type: "dir", name, children: [] });
+          } else {
+            if (counts.files >= MAX_FILES) throw new Error(`Tối đa ${MAX_FILES} file.`);
+            dir.children.push({ type: "file", name, words: [] });
+          }
+          saveStore();
+          render();
+          toast(`Đã tạo “${name}”.`);
+        } catch (error) {
+          toast(error.message);
+        }
+      }
+
+      async function renameItem(parts) {
+        const node = getNode(parts);
+        const parent = getNode(parts.slice(0, -1));
+        const name = await ask("Đổi tên", node.name, "Lưu");
+        if (!name || name === node.name) return;
+        try {
+          checkName(name);
+          ensureUniqueName(parent, name, node);
+          node.name = name;
+          if (isPrefix(parts, current)) current = [...parts.slice(0, -1), name, ...current.slice(parts.length)];
+          saveStore();
+          render();
+        } catch (error) {
+          toast(error.message);
+        }
+      }
+
+      function folderTargets(node, nodeParts) {
+        const list = [];
+        const walk = (dir, dirParts) => {
+          const inside = isPrefix(nodeParts, dirParts);
+          const isCurrentParent = sameParts(dirParts, nodeParts.slice(0, -1));
+          if (!inside && !isCurrentParent && dirParts.length + height(node) <= MAX_DEPTH) {
+            list.push({ parts: dirParts, label: dirParts.length ? dirParts.join(" / ") : "Trang chủ" });
+          }
+          for (const child of dir.children) {
+            if (child.type === "dir") walk(child, [...dirParts, child.name]);
+          }
+        };
+        walk(root, []);
+        return list;
+      }
+
+      async function moveItem(parts) {
+        const node = getNode(parts);
+        const targets = folderTargets(node, parts);
+        if (!targets.length) {
+          toast("Không có thư mục đích phù hợp.");
+          return;
+        }
+        const dest = await pickFolder(`Chuyển “${node.name}” đến`, targets);
+        if (!dest) return;
+        try {
+          const target = getNode(dest);
+          ensureUniqueName(target, node.name);
+          const parent = getNode(parts.slice(0, -1));
+          parent.children.splice(parent.children.indexOf(node), 1);
+          target.children.push(node);
+          if (isPrefix(parts, current)) current = [...dest, node.name, ...current.slice(parts.length)];
+          saveStore();
+          render();
+          toast(`Đã chuyển “${node.name}”.`);
+        } catch (error) {
+          toast(error.message);
+        }
+      }
+
+      async function deleteItem(parts) {
+        const node = getNode(parts);
+        const text = node.type === "dir" ? "Mọi thư mục và file bên trong sẽ mất." : "Mọi từ trong file này sẽ mất.";
+        const ok = await confirmBox(`Xóa “${node.name}”?`, text, "Xóa", "Hủy", true);
+        if (!ok) return;
+        const parent = getNode(parts.slice(0, -1));
+        parent.children.splice(parent.children.indexOf(node), 1);
+        if (isPrefix(parts, current)) current = parts.slice(0, -1);
+        saveStore();
+        render();
+        toast(`Đã xóa “${node.name}”.`);
+      }
+
+      // ---------- từ vựng ----------
+      async function addWord(raw) {
+        const word = raw.trim().replace(/\s+/g, " ");
+        if (!word) return;
+        const fileParts = [...current];
+        const file = getNode(fileParts);
+        try {
+          if (word.length > MAX_WORD) throw new Error(`Từ dùng tối đa ${MAX_WORD} ký tự.`);
+          if (/[\x00-\x1f\x7f]/.test(word)) throw new Error("Từ có ký tự không hợp lệ.");
+          if (file.words.some(item => item.word.toLowerCase() === word.toLowerCase())) throw new Error("Từ này đã có trong file này.");
+          if (totals(root).words >= MAX_WORDS) throw new Error(`Tối đa ${MAX_WORDS} từ.`);
+        } catch (error) {
+          toast(error.message);
+          return;
+        }
+        const ok = await confirmBox(`Thêm “${word}”?`, `Từ sẽ được lưu vào “${file.name}”.`, "Lưu", "Để sau");
+        if (!ok) return;
+        file.words.push({ word, addedAt: Date.now() });
+        saveStore();
+        render();
+        toast(`Đã thêm “${word}”.`);
+        playWord(fileParts, word);
+      }
+
+      async function removeWord(word) {
+        const ok = await confirmBox(`Xóa “${word}”?`, "Từ này sẽ bị xóa khỏi file.", "Xóa", "Hủy", true);
+        if (!ok) return;
+        const file = getNode(current);
+        file.words = file.words.filter(item => item.word !== word);
+        saveStore();
+        render();
+        toast(`Đã xóa “${word}”.`);
+      }
+
       // ---------- phiên âm IPA ----------
-      const IPA_KEY = "word-cabinet.ipa.v1";
+      let ipaChain = Promise.resolve();
       const ipaCache = readJSON(IPA_KEY, {});
       const ipaPending = new Set();
-      let ipaChain = Promise.resolve();
 
       function parseIpa(data) {
         const entry = Array.isArray(data) ? data[0] : null;
@@ -423,610 +581,21 @@
 
       function ipaText(word) {
         const entry = ipaCache[word.toLowerCase()];
-        if (!entry) return "…";
-        const region = accentEl.value === "us" ? "us" : "uk";
-        return entry[region] || entry.any || "—";
+        if (!entry) return "đang tải phiên âm…";
+        const region = voiceEl.value === "us" ? "us" : "uk";
+        return entry[region] || entry.any || "chưa có phiên âm";
       }
 
-      // ---------- rendering ----------
-      function escapeHtml(value) {
-        return String(value).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+      // ---------- phát âm ----------
+      function findWordRow(key) {
+        return [...view.querySelectorAll(".word-row")].find(row => row.dataset.key === key) || null;
       }
 
-      function showToast(message) {
-        toastEl.textContent = message;
-        toastEl.classList.add("show");
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3000);
-      }
-
-      function isOpen(parts) {
-        const key = pathKey(parts);
-        return openState.has(key) ? openState.get(key) : isPrefix(parts, cwd);
-      }
-
-      function renderTreeNodes(dir, parentParts, depth) {
-        return sortedChildren(dir).map(node => {
-          const parts = [...parentParts, node.name];
-          const key = escapeHtml(pathKey(parts));
-          const active = sameParts(parts, cwd) ? " active" : "";
-          if (node.type === "dir") {
-            const open = isOpen(parts);
-            return `<div class="tree-row${active}" style="--d:${depth}" data-kind="dir" data-path="${key}"><span class="chev" data-action="toggle">${open ? "▾" : "▸"}</span><span class="ico">${ICON.folder}</span><span class="name">${escapeHtml(node.name)}</span></div>${open ? renderTreeNodes(node, parts, depth + 1) : ""}`;
-          }
-          return `<div class="tree-row${active}" style="--d:${depth}" data-kind="file" data-path="${key}"><span class="chev"></span><span class="ico word">${ICON.word}</span><span class="name">${escapeHtml(node.name)}</span></div>`;
-        }).join("");
-      }
-
-      function renderExplorer() {
-        const rootActive = cwd.length === 0 ? " active" : "";
-        explorerEl.innerHTML = `<div class="tree-row${rootActive}" style="--d:0" data-kind="dir" data-path="[]"><span class="chev" data-action="toggle">${isOpen([]) ? "▾" : "▸"}</span><span class="ico">${ICON.folder}</span><span class="name">kho</span></div>${isOpen([]) ? renderTreeNodes(root, [], 1) : ""}`;
-      }
-
-      function renderBreadcrumb() {
-        const crumbs = [`<button type="button" data-crumb="0">kho</button>`];
-        cwd.forEach((name, i) => {
-          crumbs.push(`<span class="sep">/</span><button type="button" data-crumb="${i + 1}">${escapeHtml(name)}</button>`);
-        });
-        crumbsEl.innerHTML = crumbs.join("");
-      }
-
-      function emptyState(text) {
-        return `<div class="empty">${escapeHtml(text)}</div>`;
-      }
-
-      function renderContent() {
-        renderBreadcrumb();
-        tabEl.textContent = cwd.length ? cwd[cwd.length - 1] : "kho";
-        if (loadError) {
-          contentEl.innerHTML = emptyState(loadError);
-          return;
-        }
-        const dir = getNode(cwd) || root;
-        const kids = sortedChildren(dir);
-        if (!kids.length) {
-          contentEl.innerHTML = emptyState(isViewer ? "Thư mục trống." : "Thư mục trống. Gõ add <từ> trong terminal để thêm từ.");
-          return;
-        }
-        contentEl.innerHTML = kids.map(node => {
-          const parts = [...cwd, node.name];
-          const key = pathKey(parts);
-          const safeKey = escapeHtml(key);
-          if (node.type === "dir") {
-            return `<div class="item" data-kind="dir" data-path="${safeKey}"><span class="ico">${ICON.folder}</span><span class="name">${escapeHtml(node.name)}/</span><span class="meta">${countIn(node).files} từ</span></div>`;
-          }
-          const slot = recent.indexOf(key) + 1;
-          const badge = slot > 0 && slot <= HOTKEYS ? `<kbd class="hk">${slot}</kbd>` : `<span class="hk blank"></span>`;
-          const word = escapeHtml(node.name);
-          const cambridge = `https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(node.name.toLowerCase()).replace(/%20/g, "-")}`;
-          const remove = isViewer ? "" : `<button class="icon-btn remove" type="button" data-action="remove" title="Xóa" aria-label="Xóa ${word}">${ICON.trash}</button>`;
-          const ipaKey = escapeHtml(node.name.toLowerCase());
-          return `<div class="item" data-kind="file" data-path="${safeKey}">${badge}<button class="icon-btn" type="button" data-action="play" aria-label="Nghe ${word}">${ICON.play}</button><span class="name">${word}</span><span class="ipa" data-ipa="${ipaKey}">${escapeHtml(ipaText(node.name))}</span><span class="status"></span><a class="cam" href="${cambridge}" target="_blank" rel="noopener noreferrer" title="Mở Cambridge">C</a>${remove}</div>`;
-        }).join("");
-        kids.forEach(node => { if (node.type === "file") queueIpa(node.name); });
-      }
-
-      function renderStatus() {
-        const counts = countIn(root);
-        statusCount.textContent = `${counts.files}/${MAX_FILES} từ · ${counts.dirs} thư mục`;
-        if (isViewer) {
-          titleCenter.textContent = `Kho số ${khoId} · chỉ xem`;
-          statusPublish.textContent = "";
-        } else {
-          titleCenter.textContent = "Kho trên máy này";
-          statusPublish.innerHTML = publishedId
-            ? `Đã publish: <a href="${PUBLIC_ORIGIN}/${escapeHtml(publishedId)}" target="_blank" rel="noopener noreferrer">${PUBLIC_ORIGIN.replace("https://", "")}/${escapeHtml(publishedId)}</a>`
-            : "Chưa publish";
-        }
-      }
-
-      function promptText() {
-        return pendingAdd ? "Xác nhận [y/N]: " : `kho@web:${displayPath(cwd)}$ `;
-      }
-
-      function updatePrompt() { promptEl.textContent = promptText(); }
-
-      function renderAll() {
-        if (!getNode(cwd)) cwd = [];
-        renderExplorer();
-        renderContent();
-        renderStatus();
-        updatePrompt();
-      }
-
-      function cdTo(parts) {
-        cwd = parts;
-        openState.set(pathKey(parts), true);
-        renderAll();
-      }
-
-      // ---------- terminal output ----------
-      function out(text = "", cls = "") {
-        const line = document.createElement("div");
-        line.className = `term-line ${cls}`.trim();
-        line.textContent = text;
-        termOut.appendChild(line);
-        termOut.scrollTop = termOut.scrollHeight;
-      }
-
-      function outSegs(segments) {
-        const line = document.createElement("div");
-        line.className = "term-line";
-        for (const seg of segments) {
-          const span = document.createElement("span");
-          span.className = seg.cls || "";
-          span.textContent = seg.text;
-          line.appendChild(span);
-        }
-        termOut.appendChild(line);
-        termOut.scrollTop = termOut.scrollHeight;
-      }
-
-      function toggleTerminal(force) {
-        const show = force ?? termPanel.classList.contains("hidden");
-        termPanel.classList.toggle("hidden", !show);
-        if (show) termIn.focus();
-      }
-
-      // ---------- parsing ----------
-      function tokenize(line) {
-        const tokens = [];
-        let current = null;
-        let quote = null;
-        for (const ch of line) {
-          if (quote) {
-            if (ch === quote) quote = null;
-            else current += ch;
-          } else if (ch === '"' || ch === "'") {
-            quote = ch;
-            current = current ?? "";
-          } else if (/\s/.test(ch)) {
-            if (current !== null) {
-              tokens.push(current);
-              current = null;
-            }
-          } else {
-            current = (current ?? "") + ch;
-          }
-        }
-        if (quote) throw new Error(`unexpected EOF while looking for matching \`${quote}'`);
-        if (current !== null) tokens.push(current);
-        return tokens;
-      }
-
-      function parseFlags(args, allowed) {
-        const flags = new Set();
-        const rest = [];
-        let optsEnded = false;
-        for (const arg of args) {
-          if (!optsEnded && arg === "--") { optsEnded = true; continue; }
-          if (!optsEnded && arg.length > 1 && arg.startsWith("-")) {
-            for (const f of arg.slice(1)) {
-              if (!allowed.includes(f)) throw new Error(`invalid option -- '${f}'`);
-              flags.add(f);
-            }
-          } else {
-            rest.push(arg);
-          }
-        }
-        return { flags, rest };
-      }
-
-      // ---------- commands ----------
-      function cmdLs(args) {
-        const { flags, rest } = parseFlags(args, "la");
-        const targets = rest.length ? rest : ["."];
-        for (const target of targets) {
-          const parts = normalize(target);
-          const node = getNode(parts);
-          if (!node) throw new Error(`cannot access '${target}': No such file or directory`);
-          if (node.type === "file") {
-            outSegs([{ text: node.name }]);
-            continue;
-          }
-          if (targets.length > 1) out(`${target}:`);
-          const kids = sortedChildren(node);
-          if (flags.has("l")) {
-            for (const kid of kids) {
-              const isDir = kid.type === "dir";
-              const info = isDir ? `${countIn(kid).files} từ` : fmtDate(kid.addedAt);
-              outSegs([
-                { text: isDir ? "d " : "- ", cls: "muted" },
-                { text: info.padEnd(14), cls: "muted" },
-                { text: kid.name + (isDir ? "/" : ""), cls: isDir ? "dir" : "" },
-              ]);
-            }
-          } else if (kids.length) {
-            const segs = [];
-            kids.forEach((kid, i) => {
-              if (i) segs.push({ text: "  " });
-              segs.push({ text: kid.name + (kid.type === "dir" ? "/" : ""), cls: kid.type === "dir" ? "dir" : "" });
-            });
-            outSegs(segs);
-          }
-        }
-      }
-
-      function cmdCd(args) {
-        if (args.length > 1) throw new Error("too many arguments");
-        const input = args[0] ?? "~";
-        const parts = normalize(input);
-        const node = getNode(parts);
-        if (!node) throw new Error(`${input}: No such file or directory`);
-        if (node.type !== "dir") throw new Error(`${input}: Not a directory`);
-        cdTo(parts);
-      }
-
-      function cmdMkdir(args) {
-        const { flags, rest } = parseFlags(args, "p");
-        if (!rest.length) throw new Error("missing operand");
-        try {
-          for (const target of rest) {
-            const parts = normalize(target);
-            if (!parts.length) throw new Error(`cannot create directory '${target}': File exists`);
-            if (flags.has("p")) {
-              let dir = root;
-              for (let i = 0; i < parts.length; i++) {
-                checkName(parts[i], MAX_FOLDER_NAME);
-                let child = findChild(dir, parts[i]);
-                if (child && child.type === "file") throw new Error(`cannot create directory '${target}': Not a directory`);
-                if (!child) {
-                  assertFolderAllowed(i + 1);
-                  child = { type: "dir", name: parts[i], children: [] };
-                  dir.children.push(child);
-                }
-                dir = child;
-              }
-            } else {
-              const name = parts[parts.length - 1];
-              checkName(name, MAX_FOLDER_NAME);
-              const parent = getNode(parts.slice(0, -1));
-              if (!parent) throw new Error(`cannot create directory '${target}': No such file or directory`);
-              if (parent.type !== "dir") throw new Error(`cannot create directory '${target}': Not a directory`);
-              if (findChild(parent, name)) throw new Error(`cannot create directory '${target}': File exists`);
-              assertFolderAllowed(parts.length);
-              parent.children.push({ type: "dir", name, children: [] });
-            }
-          }
-        } finally {
-          saveTree();
-          renderAll();
-        }
-      }
-
-      function cmdRmdir(args) {
-        if (!args.length) throw new Error("missing operand");
-        try {
-          for (const target of args) {
-            const parts = normalize(target);
-            if (!parts.length) throw new Error("failed to remove '/': Device or resource busy");
-            const node = getNode(parts);
-            if (!node) throw new Error(`failed to remove '${target}': No such file or directory`);
-            if (node.type !== "dir") throw new Error(`failed to remove '${target}': Not a directory`);
-            if (node.children.length) throw new Error(`failed to remove '${target}': Directory not empty`);
-            removeNode(parts);
-          }
-        } finally {
-          saveTree();
-          renderAll();
-        }
-      }
-
-      function cmdRm(args) {
-        const { flags, rest } = parseFlags(args, "rf");
-        if (!rest.length) throw new Error("missing operand");
-        try {
-          for (const target of rest) {
-            const parts = normalize(target);
-            if (!parts.length) throw new Error("cannot remove '/': Is a directory");
-            const node = getNode(parts);
-            if (!node) {
-              if (flags.has("f")) continue;
-              throw new Error(`cannot remove '${target}': No such file or directory`);
-            }
-            if (node.type === "dir" && !flags.has("r")) throw new Error(`cannot remove '${target}': Is a directory`);
-            removeNode(parts);
-          }
-        } finally {
-          saveTree();
-          renderAll();
-        }
-      }
-
-      function cmdMv(args) {
-        const { rest } = parseFlags(args, "");
-        if (rest.length !== 2) throw new Error("usage: mv <nguồn> <đích>");
-        const [srcInput, dstInput] = rest;
-        const src = normalize(srcInput);
-        if (!src.length) throw new Error("cannot move '/'");
-        const srcNode = getNode(src);
-        if (!srcNode) throw new Error(`cannot stat '${srcInput}': No such file or directory`);
-        const dst = normalize(dstInput);
-        const dstNode = getNode(dst);
-        let targetParts;
-        let newName;
-        if (dstNode && dstNode.type === "dir") {
-          targetParts = dst;
-          newName = srcNode.name;
-        } else {
-          if (!dst.length) throw new Error(`cannot move '${srcInput}' to '/': File exists`);
-          targetParts = dst.slice(0, -1);
-          newName = dst[dst.length - 1];
-          const td = getNode(targetParts);
-          if (!td) throw new Error(`cannot move '${srcInput}' to '${dstInput}': No such file or directory`);
-          if (td.type !== "dir") throw new Error(`cannot move '${srcInput}' to '${dstInput}': Not a directory`);
-          if (dstNode) throw new Error(`cannot move '${srcInput}' to '${dstInput}': File exists`);
-        }
-        checkName(newName, MAX_NAME);
-        if (srcNode.type === "dir" && isPrefix(src, targetParts)) throw new Error(`cannot move '${srcInput}' into itself`);
-        const targetDir = getNode(targetParts);
-        const clash = findChild(targetDir, newName);
-        if (clash === srcNode) return;
-        if (clash) throw new Error(`cannot move '${srcInput}' to '${dstInput}': File exists`);
-        if (srcNode.type === "dir" && targetParts.length + height(srcNode) > MAX_DEPTH) {
-          throw new Error(`thư mục chỉ được lồng tối đa ${MAX_DEPTH} cấp`);
-        }
-        const oldCwd = [...cwd];
-        removeNode(src);
-        srcNode.name = newName;
-        targetDir.children.push(srcNode);
-        if (isPrefix(src, oldCwd)) cwd = [...targetParts, newName, ...oldCwd.slice(src.length)];
-        saveTree();
-        renderAll();
-      }
-
-      function cmdCat(args) {
-        if (!args.length) throw new Error("missing operand");
-        for (const target of args) {
-          const parts = normalize(target);
-          const node = getNode(parts);
-          if (!node) throw new Error(`${target}: No such file or directory`);
-          if (node.type === "dir") throw new Error(`${target}: Is a directory`);
-          out(`word: ${node.name}`);
-          out(`thêm lúc: ${fmtDate(node.addedAt)}`);
-          out(`đường dẫn: ${displayPath(parts)}`);
-        }
-      }
-
-      function walk(dir, prefix, lines) {
-        const kids = sortedChildren(dir);
-        kids.forEach((kid, i) => {
-          const last = i === kids.length - 1;
-          lines.push(prefix + (last ? "└── " : "├── ") + kid.name + (kid.type === "dir" ? "/" : ""));
-          if (kid.type === "dir") walk(kid, prefix + (last ? "    " : "│   "), lines);
-        });
-      }
-
-      function cmdTree(args) {
-        const target = args[0] ?? ".";
-        const parts = normalize(target);
-        const node = getNode(parts);
-        if (!node) throw new Error(`${target}: No such file or directory`);
-        if (node.type === "file") {
-          out(node.name);
-          return;
-        }
-        const lines = [];
-        walk(node, "", lines);
-        out(displayPath(parts));
-        lines.forEach(line => out(line));
-        const counts = countIn(node);
-        out(`\n${counts.dirs} thư mục, ${counts.files} từ`);
-      }
-
-      function cmdAdd(args) {
-        if (!args.length) throw new Error("usage: add <từ>");
-        const phrase = args.join(" ").replace(/\s+/g, " ").trim();
-        if (!phrase) throw new Error("usage: add <từ>");
-        if (phrase.length > MAX_NAME) throw new Error(`từ tối đa ${MAX_NAME} ký tự`);
-        checkName(phrase, MAX_NAME);
-        const dir = getNode(cwd);
-        if (dir.children.some(c => c.name.toLowerCase() === phrase.toLowerCase())) {
-          throw new Error(`'${phrase}' already exists in ${displayPath(cwd)}`);
-        }
-        if (fileTotal() >= MAX_FILES) throw new Error(`kho tối đa ${MAX_FILES} từ`);
-        pendingAdd = { word: phrase, dir: [...cwd] };
-        updatePrompt();
-        out(`Thêm “${phrase}” vào ${displayPath(cwd)}? Nhập y để lưu, phím khác để hủy.`, "warn");
-      }
-
-      async function commitAdd(pending) {
-        const dir = getNode(pending.dir);
-        if (!dir || dir.type !== "dir") throw new Error("thư mục không còn tồn tại");
-        if (dir.children.some(c => c.name.toLowerCase() === pending.word.toLowerCase())) {
-          throw new Error(`'${pending.word}' already exists`);
-        }
-        if (fileTotal() >= MAX_FILES) throw new Error(`kho tối đa ${MAX_FILES} từ`);
-        const node = { type: "file", name: pending.word, addedAt: Date.now() };
-        dir.children.push(node);
-        saveTree();
-        renderAll();
-        out(`Đã thêm “${pending.word}” vào ${displayPath(pending.dir)}.`, "ok");
-        await playWord([...pending.dir, pending.word], node);
-      }
-
-      async function cmdPlay(args) {
-        if (!args.length) throw new Error("missing word or number");
-        const phrase = args.join(" ");
-        const dir = getNode(cwd);
-        if (args.length === 1 && /^\d+$/.test(phrase)) {
-          const words = sortedChildren(dir).filter(c => c.type === "file");
-          const node = words[Number(phrase) - 1];
-          if (!node) throw new Error(`no word at position ${phrase}`);
-          await playWord([...cwd, node.name], node);
-          return;
-        }
-        const parts = normalize(phrase);
-        const node = getNode(parts);
-        if (!node) throw new Error(`${phrase}: No such word`);
-        if (node.type !== "file") throw new Error(`${phrase}: Is a directory`);
-        await playWord(parts, node);
-      }
-
-      async function cmdPublish() {
-        if (!fileTotal()) throw new Error("kho trống, chưa có gì để publish");
-        out("Đang publish…", "muted");
-        const data = await publishTree();
-        out(`Đã publish: ${PUBLIC_ORIGIN}/${data.id}`, "ok");
-      }
-
-      function showHistory() {
-        cmdHistory.forEach((item, i) => out(`${String(i + 1).padStart(4)}  ${item}`));
-      }
-
-      function printHelp() {
-        [
-          "Lệnh có sẵn:",
-          "  help                 xem danh sách lệnh",
-          "  pwd                  in thư mục hiện tại",
-          "  ls [-l] [đường dẫn]  liệt kê thư mục hoặc từ",
-          "  cd [đường dẫn]       đổi thư mục (cd .. lùi lại, cd ~ về gốc)",
-          "  tree [đường dẫn]     hiện cây thư mục",
-          "  mkdir [-p] <tên>     tạo thư mục (-p tạo cả thư mục cha)",
-          "  rmdir <thư mục>      xóa thư mục rỗng",
-          "  rm [-r] <đường dẫn>  xóa từ; xóa thư mục cần -r",
-          "  mv <nguồn> <đích>    đổi tên hoặc chuyển từ/thư mục",
-          "  cat <từ>             xem thông tin của từ",
-          "  add <từ>             thêm từ vào thư mục hiện tại (cần xác nhận y)",
-          "  play <từ | số>       phát từ, số là vị trí trong ls",
-          "  publish              đưa kho lên server để người khác xem",
-          "  history, clear       lịch sử lệnh, xóa màn hình",
-          "",
-          "Phím 1–5: phát từ gần nhất (1 là từ mới nhất). Bấm khi ô nhập đang trống.",
-          'Tên có khoảng trắng để trong nháy: mkdir "week 1". Tab để hoàn thành tên.',
-        ].forEach(line => out(line));
-        if (isViewer) out("Kho đã publish chỉ đọc: các lệnh ghi bị tắt.", "muted");
-      }
-
-      const COMMANDS = {
-        help: () => printHelp(),
-        clear: () => { termOut.textContent = ""; },
-        pwd: () => out(displayPath(cwd)),
-        history: showHistory,
-        ls: cmdLs,
-        cd: cmdCd,
-        mkdir: cmdMkdir,
-        rmdir: cmdRmdir,
-        rm: cmdRm,
-        mv: cmdMv,
-        cat: cmdCat,
-        tree: cmdTree,
-        add: cmdAdd,
-        play: cmdPlay,
-        publish: cmdPublish,
-      };
-
-      async function runLine(raw) {
-        out(`${promptText()}${raw}`, "echo");
-        if (pendingAdd) {
-          const pending = pendingAdd;
-          pendingAdd = null;
-          updatePrompt();
-          const answer = raw.trim().toLowerCase();
-          if (answer === "y" || answer === "yes") {
-            try { await commitAdd(pending); } catch (error) { out(`add: ${error.message}`, "err"); }
-          } else {
-            out("Đã hủy.", "muted");
-          }
-          return;
-        }
-        if (!raw.trim()) return;
-        cmdHistory.push(raw);
-        histPos = cmdHistory.length;
-        let tokens;
-        try {
-          tokens = tokenize(raw);
-        } catch (error) {
-          out(`bash: ${error.message}`, "err");
-          return;
-        }
-        const [name, ...args] = tokens;
-        const fn = COMMANDS[name];
-        if (!fn) {
-          out(`bash: ${name}: command not found`, "err");
-          return;
-        }
-        if (isViewer && !VIEWER_COMMANDS.has(name)) {
-          out(`${name}: kho đã publish chỉ đọc`, "err");
-          return;
-        }
-        try {
-          await fn(args);
-        } catch (error) {
-          out(`${name}: ${error.message}`, "err");
-        }
-        updatePrompt();
-      }
-
-      function complete() {
-        const value = termIn.value;
-        const partial = value.split(/\s+/).pop();
-        const cut = value.length - partial.length;
-        const slash = partial.lastIndexOf("/");
-        const dirText = slash >= 0 ? partial.slice(0, slash + 1) : "";
-        const namePart = partial.slice(slash + 1).toLowerCase();
-        const dir = getNode(normalize(dirText || "."));
-        if (!dir || dir.type !== "dir") return;
-        const matches = dir.children.filter(c => c.name.toLowerCase().startsWith(namePart));
-        if (!matches.length) return;
-        if (matches.length === 1) {
-          const match = matches[0];
-          const name = /\s/.test(match.name) ? `"${match.name}"` : match.name;
-          termIn.value = value.slice(0, cut) + dirText + name + (match.type === "dir" ? "/" : " ");
-        } else {
-          out(matches.map(m => m.name + (m.type === "dir" ? "/" : "")).join("  "), "muted");
-        }
-      }
-
-      termIn.addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          const value = termIn.value;
-          termIn.value = "";
-          runLine(value);
-        } else if (event.key === "ArrowUp") {
-          event.preventDefault();
-          if (histPos > 0) {
-            histPos -= 1;
-            termIn.value = cmdHistory[histPos] ?? "";
-          }
-        } else if (event.key === "ArrowDown") {
-          event.preventDefault();
-          if (histPos < cmdHistory.length) {
-            histPos += 1;
-            termIn.value = cmdHistory[histPos] ?? "";
-          }
-        } else if (event.key === "Tab") {
-          event.preventDefault();
-          complete();
-        } else if (event.ctrlKey && event.key.toLowerCase() === "l") {
-          event.preventDefault();
-          termOut.textContent = "";
-        } else if (event.ctrlKey && event.key.toLowerCase() === "c") {
-          event.preventDefault();
-          if (pendingAdd) {
-            pendingAdd = null;
-            updatePrompt();
-          }
-          out("^C", "muted");
-          termIn.value = "";
-        }
-      });
-
-      // ---------- playback ----------
-      function findRow(key) {
-        return [...contentEl.querySelectorAll(".item")].find(row => row.dataset.path === key) || null;
-      }
-
-      function setRowStatus(key, text) {
-        const row = findRow(key);
-        if (row) row.querySelector(".status").textContent = text;
-      }
-
-      function setRowBusy(key, busy) {
-        const row = findRow(key);
-        const button = row?.querySelector('[data-action="play"]');
-        if (button) button.disabled = busy;
+      function setWordBusy(key, busy) {
+        const button = findWordRow(key)?.querySelector('[data-action="play"]');
+        if (!button) return;
+        button.disabled = busy;
+        button.textContent = busy ? "Đang đọc…" : "Nghe";
       }
 
       function wait(ms) {
@@ -1083,19 +652,17 @@
         return URL.createObjectURL(await response.blob());
       }
 
-      async function playWord(parts, node, { track = true } = {}) {
-        const key = pathKey(parts);
+      async function playWord(fileParts, word, { track = true } = {}) {
+        const key = pathKey([...fileParts, word]);
         if (track) {
           touchRecent(key);
-          renderContent();
+          if (isPrefix(fileParts, current)) render();
         }
         const requestId = ++playbackId;
         stopAudio();
-        currentKey = key;
-        setRowBusy(key, true);
-        setRowStatus(key, "đang tạo giọng…");
+        setWordBusy(key, true);
         try {
-          const audioUrl = await getAudioUrl(node.name, accentEl.value);
+          const audioUrl = await getAudioUrl(word, voiceEl.value);
           if (requestId !== playbackId) {
             URL.revokeObjectURL(audioUrl);
             return;
@@ -1103,7 +670,6 @@
           activeAudioUrl = audioUrl;
           const audio = new Audio(audioUrl);
           activeAudio = audio;
-          setRowStatus(key, "");
           for (let count = 0; count < 2; count += 1) {
             await playOnce(audio);
             if (requestId !== playbackId) return;
@@ -1111,127 +677,85 @@
             if (requestId !== playbackId) return;
           }
         } catch (error) {
-          if (requestId === playbackId) {
-            setRowStatus(key, "lỗi audio");
-            showToast(`${error.message || "Không tạo được audio."} Bấm C để mở Cambridge.`);
-          }
+          if (requestId === playbackId) toast(error.message || "Không tạo được audio.");
         } finally {
-          if (requestId === playbackId) {
-            stopAudio();
-            setRowBusy(key, false);
-          } else if (key !== currentKey) {
-            setRowBusy(key, false);
-          }
+          if (requestId === playbackId) stopAudio();
+          setWordBusy(key, false);
         }
       }
 
       async function playRecent(slot) {
         const key = recent[slot - 1];
         if (!key) {
-          showToast(`Chưa có từ gần đây ở phím ${slot}.`);
+          toast(`Chưa có từ ở phím ${slot}. Hãy nghe một từ trước.`);
           return;
         }
         const parts = JSON.parse(key);
-        const node = getNode(parts);
-        if (!node || node.type !== "file") {
+        const word = parts[parts.length - 1];
+        const fileParts = parts.slice(0, -1);
+        const file = getNode(fileParts);
+        if (!file || file.type !== "file" || !file.words.some(item => item.word === word)) {
           recent = recent.filter(item => item !== key);
           safeSet(RECENT_KEY, JSON.stringify(recent));
-          renderContent();
-          showToast("Từ này đã bị xóa khỏi kho.");
+          render();
+          toast("Từ này đã bị xóa.");
           return;
         }
-        await playWord(parts, node, { track: false });
+        await playWord(fileParts, word, { track: false });
       }
 
-      // ---------- events ----------
-      explorerEl.addEventListener("click", event => {
-        const row = event.target.closest(".tree-row");
-        if (!row) return;
-        const parts = JSON.parse(row.dataset.path);
-        const node = getNode(parts);
-        if (!node) return;
-        if (event.target.dataset.action === "toggle") {
-          openState.set(row.dataset.path, !isOpen(parts));
-          renderExplorer();
-          return;
+      // ---------- sự kiện ----------
+      view.addEventListener("click", event => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        if (button.dataset.open !== undefined) return go(JSON.parse(button.dataset.open));
+        if (button.dataset.new) return createItem(button.dataset.new);
+        const action = button.dataset.action;
+        if (action === "play") {
+          const parts = JSON.parse(button.dataset.key);
+          return playWord(parts.slice(0, -1), parts[parts.length - 1]);
         }
-        if (node.type === "dir") cdTo(parts);
-        else playWord(parts, node);
+        if (action === "del-word") return removeWord(button.dataset.word);
+        if (action === "rename") return renameItem(JSON.parse(button.dataset.path));
+        if (action === "move") return moveItem(JSON.parse(button.dataset.path));
+        if (action === "delete") return deleteItem(JSON.parse(button.dataset.path));
       });
 
-      contentEl.addEventListener("click", event => {
-        if (event.target.closest("a")) return;
-        const row = event.target.closest(".item");
-        if (!row) return;
-        const parts = JSON.parse(row.dataset.path);
-        const node = getNode(parts);
-        if (!node) return;
-        const action = event.target.closest("[data-action]")?.dataset.action;
-        if (action === "remove") {
-          removeNode(parts);
-          saveTree();
-          renderAll();
-          showToast(`Đã xóa “${node.name}”.`);
-          return;
-        }
-        if (node.type === "dir") cdTo(parts);
-        else playWord(parts, node);
+      view.addEventListener("submit", event => {
+        if (event.target.id !== "add-form") return;
+        event.preventDefault();
+        addWord($("word-input").value);
       });
 
       crumbsEl.addEventListener("click", event => {
-        const button = event.target.closest("[data-crumb]");
+        const button = event.target.closest("button");
         if (!button) return;
-        cdTo(cwd.slice(0, Number(button.dataset.crumb)));
+        if (button.hasAttribute("data-back")) go(current.slice(0, -1));
+        else go(JSON.parse(button.dataset.go));
       });
 
       document.addEventListener("keydown", event => {
-        if (event.ctrlKey && event.key === "`") {
-          event.preventDefault();
-          toggleTerminal();
+        if (event.key === "Escape" && dialogCancel) {
+          dialogCancel();
           return;
         }
-        if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || event.repeat) return;
-        if (event.target === termIn) {
-          if (termIn.value !== "") return;
-        } else if (["INPUT", "TEXTAREA", "SELECT"].includes(event.target?.tagName)) {
-          return;
-        }
+        if (dialogCancel || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || event.repeat) return;
+        const target = event.target;
+        if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName) && target.value !== "") return;
         if (!/^[1-5]$/.test(event.key)) return;
         event.preventDefault();
         playRecent(Number(event.key));
       });
 
-      publishBtn.addEventListener("click", () => {
-        toggleTerminal(true);
-        runLine("publish");
-      });
-      $("toggle-terminal").addEventListener("click", () => toggleTerminal());
-      $("term-close").addEventListener("click", () => toggleTerminal(false));
-
-      // ---------- start ----------
-      async function init() {
-        const voicesReady = loadVoices();
-        if (isViewer) {
-          document.body.classList.add("viewer");
-          publishBtn.classList.add("hidden");
-          out("Đang tải kho…", "muted");
-          try {
-            const data = await request(`${API}?id=${encodeURIComponent(khoId)}`);
-            root.children = data.tree;
-          } catch (error) {
-            loadError = error.message;
-          }
-          termOut.textContent = "";
-          out(loadError || `Kho số ${khoId} · chỉ xem. Gõ help để xem lệnh.`, loadError ? "err" : "muted");
-        } else {
-          root.children = loadLocalTree();
-          out("Kho trên máy này. Gõ help để xem lệnh.", "muted");
-        }
-        renderAll();
-        await voicesReady;
-      }
-
-      init();
+      // ---------- khởi động ----------
+      root.children = loadStore();
+      const visit = node => {
+        if (node.type === "file") node.words.forEach(item => queueIpa(item.word));
+        else node.children.forEach(visit);
+      };
+      root.children.forEach(visit);
+      render();
+      loadVoices().then(render);
     })();
   </script>
 </body>

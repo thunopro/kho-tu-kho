@@ -15,12 +15,13 @@ ALLOWED_ORIGINS = {
     "http://localhost:8000",
     "http://127.0.0.1:8000",
 }
-MAX_FILES = 200            # tổng số từ trong một kho
+MAX_WORDS = 1000           # tổng số từ trong một kho
+MAX_FILES = 100            # tổng số file (mỗi file chứa nhiều từ)
 MAX_FOLDERS = 60           # tổng số thư mục trong một kho
 MAX_DEPTH = 4              # số cấp thư mục lồng nhau tối đa
 MAX_FOLDER_NAME = 40
 MAX_WORD_LENGTH = 80
-MAX_BODY_BYTES = 64 * 1024
+MAX_BODY_BYTES = 256 * 1024
 ID_PATTERN = re.compile(r"^[1-9][0-9]{0,17}$")
 CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
 # Bảng "kho" đã tồn tại từ phiên bản đầu (cột words = danh sách phẳng).
@@ -40,6 +41,7 @@ SCHEMA_STATEMENTS = [
     "ALTER TABLE kho ALTER COLUMN words DROP NOT NULL",
 ]
 LEGACY_FOLDER = "week1"
+LEGACY_FILE = "từ cũ"
 _schema_ready = False
 
 
@@ -70,16 +72,18 @@ def sql(query, params=None):
 
 
 def legacy_tree(words):
-    """Chuyển danh sách phẳng cũ thành cây: mọi từ nằm trong thư mục week1."""
+    """Chuyển danh sách phẳng cũ thành cây: thư mục week1 chứa một file "từ cũ"."""
     items = load_json(words) or []
-    children = [
-        {"type": "file", "name": item["word"], "addedAt": int(item.get("addedAt", 0) or 0)}
+    word_items = [
+        {"word": item["word"], "addedAt": int(item.get("addedAt", 0) or 0)}
         for item in items
         if isinstance(item, dict) and isinstance(item.get("word"), str)
     ]
-    if not children:
+    if not word_items:
         return []
-    return [{"type": "dir", "name": LEGACY_FOLDER, "children": children}]
+    return [{"type": "dir", "name": LEGACY_FOLDER, "children": [
+        {"type": "file", "name": LEGACY_FILE, "words": word_items}
+    ]}]
 
 
 def hash_key(key):
@@ -105,6 +109,27 @@ class TreeLimits:
     def __init__(self):
         self.files = 0
         self.folders = 0
+        self.words = 0
+
+
+def sanitize_words(raw_words, limits):
+    if not isinstance(raw_words, list):
+        raise ValueError("Dữ liệu kho không hợp lệ.")
+    seen = set()
+    cleaned = []
+    for raw in raw_words:
+        if not isinstance(raw, dict):
+            raise ValueError("Dữ liệu kho không hợp lệ.")
+        word = clean_name(raw.get("word"), MAX_WORD_LENGTH, "Mỗi từ")
+        if word.lower() in seen:
+            continue
+        seen.add(word.lower())
+        limits.words += 1
+        if limits.words > MAX_WORDS:
+            raise ValueError(f"Kho tối đa {MAX_WORDS} từ.")
+        added_at = raw.get("addedAt")
+        cleaned.append({"word": word, "addedAt": int(added_at) if isinstance(added_at, (int, float)) else 0})
+    return cleaned
 
 
 def sanitize_children(raw_children, depth, limits):
@@ -129,15 +154,14 @@ def sanitize_children(raw_children, depth, limits):
                 "children": sanitize_children(raw.get("children", []), depth + 1, limits),
             }
         elif kind == "file":
-            name = clean_name(raw.get("name"), MAX_WORD_LENGTH, "Mỗi từ")
+            name = clean_name(raw.get("name"), MAX_FOLDER_NAME, "Tên file")
             limits.files += 1
             if limits.files > MAX_FILES:
-                raise ValueError(f"Kho tối đa {MAX_FILES} từ.")
-            added_at = raw.get("addedAt")
+                raise ValueError(f"Kho tối đa {MAX_FILES} file.")
             node = {
                 "type": "file",
                 "name": name,
-                "addedAt": int(added_at) if isinstance(added_at, (int, float)) else 0,
+                "words": sanitize_words(raw.get("words", []), limits),
             }
         else:
             raise ValueError("Dữ liệu kho không hợp lệ.")
@@ -152,7 +176,7 @@ def sanitize_children(raw_children, depth, limits):
 def sanitize_tree(raw_tree):
     limits = TreeLimits()
     children = sanitize_children(raw_tree, 1, limits)
-    if limits.files == 0:
+    if limits.words == 0:
         raise ValueError("Kho cần có ít nhất một từ để publish.")
     return children
 
@@ -200,7 +224,7 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("Content-Length", "0") or 0)
         if length > MAX_BODY_BYTES:
-            return self._json(413, {"error": "Dữ liệu quá lớn. Kho tối đa 200 từ."})
+            return self._json(413, {"error": f"Dữ liệu quá lớn. Kho tối đa {MAX_WORDS} từ."})
         try:
             body = json.loads(self.rfile.read(length).decode("utf-8") or "{}")
         except (ValueError, UnicodeDecodeError):
