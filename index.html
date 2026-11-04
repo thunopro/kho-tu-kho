@@ -236,8 +236,8 @@
         { value: "uk", label: "Anh-Anh (UK)" },
         { value: "us", label: "Anh-Mỹ (US)" },
       ];
-      const LEGACY_FOLDER = "week1";
-      const LEGACY_FILE = "từ cũ";
+      const VOCAB_FILE = "Từ vựng";
+      const VOCAB_FLAG = "word-cabinet.layout.v4";
       const ICON_FOLDER = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.7v8.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>';
       const ICON_FILE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M9 12h6M9 16h6"/></svg>';
 
@@ -276,20 +276,49 @@
           if (node.type === "dir") result.push({ type: "dir", name: node.name, children: convertFromV2(node.children || []) });
           else loose.push({ word: node.name, addedAt: Number(node.addedAt) || 0 });
         }
-        if (loose.length) result.push({ type: "file", name: "từ", words: loose });
+        if (loose.length) result.push({ type: "file", name: VOCAB_FILE, words: loose });
+        return result;
+      }
+
+      // Gộp file "Từ vựng" nằm trong thư mục week1 hoặc ngoài cùng về một file "Từ vựng" ở gốc.
+      function tidyLayout(children) {
+        const result = [];
+        const pushVocab = words => {
+          const existing = result.find(n => n.type === "file" && n.name === VOCAB_FILE);
+          if (existing) {
+            const keys = new Set(existing.words.map(w => w.word.toLowerCase()));
+            existing.words.push(...words.filter(w => !keys.has(w.word.toLowerCase())));
+          } else {
+            result.push({ type: "file", name: VOCAB_FILE, words: [...words] });
+          }
+        };
+        for (const node of children) {
+          const isLegacyFile = node.type === "file" && /^(từ cũ|từ)$/i.test(node.name);
+          const isWeek1 = node.type === "dir" && node.name === "week1" && node.children.length === 1
+            && node.children[0].type === "file" && /^(từ cũ|từ)$/i.test(node.children[0].name);
+          if (isLegacyFile) pushVocab(node.words);
+          else if (isWeek1) pushVocab(node.children[0].words);
+          else result.push(node);
+        }
         return result;
       }
 
       function loadStore() {
         const saved = readJSON(STORE_KEY, null);
-        if (Array.isArray(saved)) return saved;
+        if (Array.isArray(saved)) {
+          if (safeGet(VOCAB_FLAG)) return saved;
+          const tidied = tidyLayout(saved);
+          safeSet(VOCAB_FLAG, "1");
+          safeSet(STORE_KEY, JSON.stringify(tidied));
+          return tidied;
+        }
         const v2 = readJSON(OLD_TREE_KEY, null);
         if (Array.isArray(v2)) return convertFromV2(v2);
         const v1 = readJSON(OLD_WORDS_KEY, []);
         const words = (Array.isArray(v1) ? v1 : [])
           .filter(item => item && typeof item.word === "string" && item.word.trim())
           .map(item => ({ word: item.word.trim().replace(/\s+/g, " ").slice(0, MAX_WORD), addedAt: Number(item.addedAt) || 0 }));
-        return words.length ? [{ type: "dir", name: LEGACY_FOLDER, children: [{ type: "file", name: LEGACY_FILE, words }] }] : [];
+        return words.length ? [{ type: "file", name: VOCAB_FILE, words }] : [];
       }
 
       function saveStore() {

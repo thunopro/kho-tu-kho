@@ -26,7 +26,7 @@ ID_PATTERN = re.compile(r"^[1-9][0-9]{0,17}$")
 CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
 # Bảng "kho" đã tồn tại từ phiên bản đầu (cột words = danh sách phẳng).
 # Không xóa bảng cũ: thêm cột tree và cho phép words rỗng; dữ liệu cũ được
-# đọc như một thư mục "week1" (xem legacy_tree).
+# đọc như một file "Từ vựng" ở gốc (xem legacy_tree).
 SCHEMA_STATEMENTS = [
     """
     CREATE TABLE IF NOT EXISTS kho (
@@ -40,8 +40,7 @@ SCHEMA_STATEMENTS = [
     "ALTER TABLE kho ADD COLUMN IF NOT EXISTS tree JSONB",
     "ALTER TABLE kho ALTER COLUMN words DROP NOT NULL",
 ]
-LEGACY_FOLDER = "week1"
-LEGACY_FILE = "từ cũ"
+VOCAB_FILE = "Từ vựng"
 _schema_ready = False
 
 
@@ -72,7 +71,7 @@ def sql(query, params=None):
 
 
 def legacy_tree(words):
-    """Chuyển danh sách phẳng cũ thành cây: thư mục week1 chứa một file "từ cũ"."""
+    """Chuyển danh sách phẳng cũ thành cây: một file "Từ vựng" ở gốc."""
     items = load_json(words) or []
     word_items = [
         {"word": item["word"], "addedAt": int(item.get("addedAt", 0) or 0)}
@@ -81,9 +80,7 @@ def legacy_tree(words):
     ]
     if not word_items:
         return []
-    return [{"type": "dir", "name": LEGACY_FOLDER, "children": [
-        {"type": "file", "name": LEGACY_FILE, "words": word_items}
-    ]}]
+    return [{"type": "file", "name": VOCAB_FILE, "words": word_items}]
 
 
 def hash_key(key):
